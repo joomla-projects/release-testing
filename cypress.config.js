@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 
 const packageJsonPath = path.join(__dirname, 'package.json');
@@ -39,6 +38,3 @@ const cypressConfig = {
     db_prefix: 'j4_',
   },
 };
-
-// Export the Cypress configuration as a module
-module.exports = cypressConfig;
