@@ -1,0 +1,63 @@
+# Smart Search
+administrator/components/com_finder/*  @hackwar
+components/com_finder/*  @hackwar
+modules/mod_finder/*  @hackwar
+plugins/content/finder/*  @hackwar
+plugins/finder/*  @hackwar
+
+# Release Tools
+build.xml  @fancyFranci
+build/build.php  @rdeutz
+build/bump.php  @rdeutz
+build/deleted_file_check.php  @rdeutz
+
+# Core/Extension Install/Update Tools
+administrator/components/com_joomlaupdate/*  @rdeutz @zero-24
+libraries/src/Installer/*  @rdeutz @zero-24
+libraries/src/Updater/*  @rdeutz @zero-24
+
+# Automated Testing
+tests/*  @hackwar @fancyFranci
+tests/Codeception/*  @rdeutz
+tests/javascript/*  @rdeutz
+tests/Unit/*  @rdeutz
+.appveyor.yml  @rdeutz @hackwar @fancyFranci
+.drone.yml  @rdeutz @hackwar @fancyFranci
+codeception.yml  @rdeutz @hackwar @fancyFranci
+phpunit.xml.dist  @rdeutz @hackwar @fancyFranci
+phpunit-pgsql.xml.dist  @rdeutz @hackwar @fancyFranci
+
+# HttpHeaders Plugin
+plugins/system/httpheaders/*  @zero-24
+
+# Workflow
+administrator/components/com_workflow/*	@bembelimen @hleithner
+administrator/language/en-GB/com_workflow.ini	@bembelimen @hleithner
+administrator/language/en-GB/com_workflow.sys.ini	@bembelimen @hleithner
+administrator/language/en-GB/plg_workflow_publishing.ini	@bembelimen @hleithner
+administrator/language/en-GB/plg_workflow_publishing.sys.ini	@bembelimen @hleithner
+libraries/src/Form/Field/TransitionField.php	@bembelimen @hleithner
+libraries/src/Form/Field/Workflow*	@bembelimen @hleithner
+libraries/src/HTML/Helpers/Workflow*	@bembelimen @hleithner
+libraries/src/MVC/Model/Workflow*	@bembelimen @hleithner
+libraries/src/MVC/Model/Workflow*	@bembelimen @hleithner
+libraries/src/Workflow/*	@bembelimen @hleithner
+build/media_source/com_workflow/*	@bembelimen @hleithner
+plugins/workflow/*	@bembelimen @hleithner
+
+# Joomla! Accessibility Team
+administrator/*/components/*/tmpl/* @chmst
+administrator/*/modules/*/tmpl/* @chmst
+administrator/templates/atum/* @chmst
+components/*/tmpl/* @chmst
+modules/*/tmpl/* @chmst
+plugins/*/tmpl/* @chmst
+templates/cassiopeia/* @chmst
+layouts/* @chmst
+installation/tmpl/* @chmst
+
+# Translation GitHub Actions
+.github/workflows/create-translation-pull-request-v4.yml @hleithner
+
+# Libraries
+libraries/src/* @laoneo
