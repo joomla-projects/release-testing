@@ -8,7 +8,7 @@ module.exports = defineConfig({
   viewportWidth: 1200,
   e2e: {
     setupNodeEvents(on, config) {},
-    baseUrl: 'http://localhost/release-testing',
+    baseUrl: 'http://localhost/joomla-cms',
     specPattern: [
       'tests/cypress/integration/install/*.cy.{js,jsx,ts,tsx}',
       'tests/cypress/integration/administrator/**/*.cy.{js,jsx,ts,tsx}',
@@ -22,16 +22,16 @@ module.exports = defineConfig({
     video: false
   },
   env: {
-    sitename: 'Joomla5.0',
-    name: 'charvi',
-    email: 'charvimehradu@gmail.com',
-    username: 'root',
-    password: 'charvimehradu',
+    sitename: 'Joomla CMS Test',
+    name: 'admin',
+    email: 'admin@example.com',
+    username: 'admin',
+    password: 'adminadminadmin',
     db_type: 'MySQLi',
     db_host: 'mysql',
-    db_name: 'joomla_db',
+    db_name: 'test_joomla',
     db_user: 'root',
     db_password: 'root',
-    db_prefix: 'cgmku_',
+    db_prefix: 'j4_',
   },
 })
