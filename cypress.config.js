@@ -3,7 +3,7 @@ const path = require('path');
 const packageJsonPath = path.join(__dirname, 'package.json');
 const packageJson = require(packageJsonPath);
 
-const cypressConfig = {
+module.exports = defineConfig({
   fixturesFolder: 'tests/cypress/fixtures',
   videosFolder: 'tests/cypress/output/videos',
   screenshotsFolder: 'tests/cypress/output/screenshots',
@@ -37,4 +37,4 @@ const cypressConfig = {
     db_password: 'root',
     db_prefix: 'j4_',
   },
-};
+})
