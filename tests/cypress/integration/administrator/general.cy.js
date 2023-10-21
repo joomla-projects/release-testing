@@ -17,4 +17,9 @@ describe('Test in backend that', () => {
   it('it has a sidebar', () => {
     cy.get('#sidebar-wrapper').should('exist');
   });
+
+  it('it has the option to install blog sample data', () => {
+    cy.get('.sampledata-blog').should('exist');
+    cy.get('.sampledata-blog > .d-flex > .btn').should('exist');
+  });
 });
