@@ -1,4 +1,8 @@
-const { defineConfig } = require('cypress')
+const { defineConfig } = require('cypress');
+const path = require('path');
+
+const packageJsonPath = path.join(__dirname, 'package.json');
+const packageJson = require(packageJsonPath);
 
 module.exports = defineConfig({
   fixturesFolder: 'tests/cypress/fixtures',
@@ -7,15 +11,17 @@ module.exports = defineConfig({
   viewportHeight: 1000,
   viewportWidth: 1200,
   e2e: {
-    setupNodeEvents(on, config) {},
-    baseUrl: 'http://localhost/joomla-cms',
+    setupNodeEvents(on, config) {
+      setupPlugins(on, config);
+    },
+    baseUrl: `http://localhost/${packageJson.name}`,
     specPattern: [
-      'tests/cypress/integration/install/*.cy.{js,jsx,ts,tsx}',
+      'tests/cypress/integration/installation/*.cy.{js,jsx,ts,tsx}',
       'tests/cypress/integration/administrator/**/*.cy.{js,jsx,ts,tsx}',
       'tests/cypress/integration/module/**/*.cy.{js,jsx,ts,tsx}',
       'tests/cypress/integration/site/**/*.cy.{js,jsx,ts,tsx}'
     ],
-    supportFile: 'tests/cypress/support/index.js',
+    //supportFile: 'tests/cypress/support/index.js',
     scrollBehavior: 'center',
     browser: 'firefox',
     screenshotOnRunFailure: true,

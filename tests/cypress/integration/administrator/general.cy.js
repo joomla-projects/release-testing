@@ -1,8 +1,20 @@
-// type definitions for Cypress object "cy"
-// <reference types="cypress" />
+describe('Test in backend that', () => {
+  beforeEach(() => {
+    cy.visit('/administrator/index.php');
+    cy.get('#mod-login-username').type(`${Cypress.env('username')}`);
+    cy.get('#mod-login-password').type(`${Cypress.env('password')}`);
+    cy.get('#btn-login-submit').click();
+  });
 
-describe('Test Joomla', () => {
-  it('installation', function () {
-    cy.visit('/');
-  })
-})
+  it('it has a title', () => {
+    cy.get('.page-title').should('contain.text', 'Home Dashboard');
+  });
+
+  it('it has a header', () => {
+    cy.get('.header-inside').should('exist');
+  });
+
+  it('it has a sidebar', () => {
+    cy.get('#sidebar-wrapper').should('exist');
+  });
+});

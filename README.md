@@ -15,3 +15,13 @@ Temporary Readme for Joomla 5.0 RC Setup
 This should succesfully lead you to the following page:
 
 ![image](https://github.com/joomla-projects/release-testing/assets/121369234/860596ee-5d9d-441c-93f0-ceee805cf8be)
+
+4. Now, you just need to set up your individual data via the configuration file [cypress.config.js](https://github.com/joomla-projects/release-testing/blob/main/cypress.config.js). For this you can use the template [cypress.config.dist.js](https://github.com/joomla-projects/release-testing/blob/main/cypress.config.dist.js) as orientation. 
+
+Use the following command to run all tests:
+`npx cypress run`
+
+Use the following command to run tests in a specific folder:
+`npx cypress run --spec "tests/cypress/integration/<folder-name>/*.cy.js"`
+
+For example: `npx cypress run --spec "tests/cypress/integration/administrator/*.cy.js"` runs tets in the administrator folder.
