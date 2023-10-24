@@ -5,6 +5,7 @@ describe('Test in backend that the category component', () => {
     cy.visit('/administrator/index.php?option=com_categories&extension=com_content&filter=');
   });
   afterEach(() => cy.task('queryDB', "DELETE FROM #__categories WHERE title = 'Test category'"));
+  afterEach(() => cy.task('queryDB', "DELETE FROM #__content WHERE title = 'Test article'"));
 
   it('can create a category', () => {
     cy.visit('/administrator/index.php?option=com_categories&task=category.add&extension=com_content');
@@ -15,6 +16,17 @@ describe('Test in backend that the category component', () => {
     cy.contains('Test category');
   });
 
+  it('can assign category to article' , () => {
+    cy.db_createCategory({ title: 'Test category' }).then((id) => {
+      cy.db_createArticle({ title: 'Test article' }).then((article) => {
+        cy.visit(`/administrator/index.php?option=com_content&task=article.edit&id=${article.id}`);
+        cy.get('joomla-field-fancy-select.required > .choices > .choices__inner').click();
+        cy.contains('Test category').click();
+        cy.get('#save-group-children-save > .button-save').click();
+      });
+    });
+  });
+  
   it('can delete the test category', () => {
     // The category needs to be created through the form so proper assets are created
     cy.visit('/administrator/index.php?option=com_categories&task=category.add&extension=com_content');
