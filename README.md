@@ -8,7 +8,9 @@ Temporary Readme for Joomla 5.0 RC Setup
 
 1. Unzip the Folder: Unzip the contents of this folder into your Joomla 5.0 RC directory.
 
-2. Running the Cypress Installation: Inside the unzipped folder, you'll find a file named [setup-cypress.sh](https://github.com/joomla-projects/release-testing/blob/main/setup-cypress.sh). Double clickon it to run the tests. This file is designed to automate the setup process. Currently, it executes three commands:
+2. Now, you just need to set up your individual data via the configuration file [cypress.config.js](https://github.com/joomla-projects/release-testing/blob/main/cypress.config.js). For this you can use the template [cypress.config.dist.js](https://github.com/joomla-projects/release-testing/blob/main/cypress.config.dist.js) as orientation. (manually for now)
+  
+3. Running the Cypress Installation: Inside the unzipped folder, you'll find a file named [setup-cypress.sh](https://github.com/joomla-projects/release-testing/blob/main/setup-cypress.sh). Double clickon it to run the tests. This file is designed to automate the setup process. Currently, it executes three commands:
 
 - npm init: Initializes the project.
 - npm install cypress: Installs Cypress.
@@ -20,7 +22,6 @@ This should succesfully lead you to the following page:
 ![image](https://github.com/joomla-projects/release-testing/assets/121369234/860596ee-5d9d-441c-93f0-ceee805cf8be)
 --->
 
-3. Now, you just need to set up your individual data via the configuration file [cypress.config.js](https://github.com/joomla-projects/release-testing/blob/main/cypress.config.js). For this you can use the template [cypress.config.dist.js](https://github.com/joomla-projects/release-testing/blob/main/cypress.config.dist.js) as orientation. (manually for now)
 
 - Use the following command to run all tests:
 `npx cypress run`
