@@ -25,6 +25,7 @@ describe('Test in backend that the article form', () => {
 
   it('can archive an article', () => {
     cy.db_createArticle({ title: 'Test article' }).then(() => {
+      cy.reload();
       cy.searchForItem('Test article');
       cy.checkAllResults();
       cy.clickToolbarButton('Action');
