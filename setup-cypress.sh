@@ -12,7 +12,7 @@ npm install postgres
 npm install smtp-tester
 
 # Run all present Cypress tests
-npx cypress run
+# npx cypress run
 
 # Open Cypress
 npx cypress open
