@@ -2,25 +2,23 @@
 
 Temporary Readme for Joomla 5.0 RC Setup
 
-<!--- 
-1. Start with a Fresh Joomla Installation: For starting testing, it's essential to begin with a fresh installation of [Joomla 5.0 Release Candidate](https://github.com/joomla/joomla-cms/releases/tag/5.0.0-rc).4
---->
+The setup comprises two folders— one for web servers and another for local mode and a run.sh script. To initiate the process, use the command `./run.sh` or `./run.sh <your-website-domain>`.
+For example: `./run.sh https://example.joom.ws/`
 
-1. Unzip the Folder: Unzip the contents of this folder into your Joomla 5.0 RC directory.
+When you execute the command ./run.sh <website-domain>, the system launches the web-server script. Subsequently, it prompts you for your site username and password. The script then downloads necessary dependencies, and checks for the presence of the configuration.php file in the joomla-backup folder. If the file is not found, the system waits for you to paste the configuration file. Once provided, it inserts environment variables into the Cypress configuration file and runs Cypress tests. Notably, these tests are independent and do not rely on a database.
 
-2. Now, you just need to set up your individual data via the configuration file [cypress.config.js](https://github.com/joomla-projects/release-testing/blob/main/cypress.config.js). For this you can use the template [cypress.config.dist.js](https://github.com/joomla-projects/release-testing/blob/main/cypress.config.dist.js) as orientation. (manually for now)
-  
-3. Running the Cypress Installation: Inside the unzipped folder, you'll find a file named [setup-cypress.sh](https://github.com/joomla-projects/release-testing/blob/main/setup-cypress.sh). Double clickon it to run the tests. This file is designed to automate the setup process. Currently, it executes three commands:
-
-- npm init: Initializes the project.
-- npm install cypress: Installs Cypress.
-- npx cypress open: Opens Cypress Test Runner.
-  
-<!---
-This should succesfully lead you to the following page:
-
-![image](https://github.com/joomla-projects/release-testing/assets/121369234/860596ee-5d9d-441c-93f0-ceee805cf8be)
---->
+Alternatively, if you run ./run.sh without providing any input, the system operates in a local mode. It sets up a database, downloads necessary dependencies, and waits for the configuration file on localhost:2005.  Afterwards, you can enter default credentials for installation, and the system automatically executes the tests. The default credentials are:
+environment:
+      JOOMLA_SITE_NAME: "Joomla Test Site"
+      JOOMLA_ADMIN_USER: admin
+      JOOMLA_ADMIN_USERNAME: admin
+      JOOMLA_ADMIN_PASSOWRD: admin12345678
+      JOOMLA_ADMIN_EMAIL: admin@example.com
+      JOOMLA_DB_HOST: mysql
+      JOOMLA_DB_USER: root
+      JOOMLA_DB_PASSWORD: example12345678
+      JOOMLA_DB_NAME: joomla
+      JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK: 1
 
 
 - Use the following command to run all tests:
