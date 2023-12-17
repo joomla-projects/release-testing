@@ -1,0 +1,98 @@
+version: '3.1'
+
+services:
+
+  # mysql:
+  #   image: mysql:8.0 # Joomla 5 needs >= 8.0.13, actual 8.1.0
+  #   restart: unless-stopped
+  #   command: --default-authentication-plugin=mysql_native_password --sql_mode=""
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: example12345678
+  #   volumes:
+  #     - ./joomla-backup:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - joomla-network
+
+  # mysqladmin:
+  #   container_name: test_joomla_mysqladmin_web
+  #   image: phpmyadmin/phpmyadmin
+  #   environment:
+  #     PMA_HOST: mysql
+  #   ports:
+  #     - "2001:80"
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - mysql
+  #   networks:
+  #     - joomla-network
+
+  joomla-test:
+    container_name: test_joomla_web
+    image: joomla:5.0 # actual 5.0.0
+    restart: unless-stopped
+    ports:
+      - 2005:80
+    environment:
+      JOOMLA_SITE_NAME: "Joomla Test Site"
+      JOOMLA_ADMIN_USER: admin
+      JOOMLA_ADMIN_USERNAME: admin
+      JOOMLA_ADMIN_PASSOWRD: admin12345678
+      JOOMLA_ADMIN_EMAIL: admin@example.com
+      JOOMLA_DB_HOST: mysql
+      JOOMLA_DB_USER: root
+      JOOMLA_DB_PASSWORD: example12345678
+      # JOOMLA_DB_NAME: joomla
+      JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK: 1
+    volumes:
+      - .:/dev_joomla
+      - joomla-data:/var/www/html
+      - joomla-backup:/var/www/html/backups
+    depends_on:
+      # - mysql
+      - ftpserver
+    networks:
+      - joomla-network
+
+  cypress:
+    container_name: test_joomla_cypress_web
+    image: cypress/included:12.8.1 # actual 13. + Chrome 116. + Edge 116. + Firefox 117.
+    restart: "no"
+    entrypoint: /dev_joomla/scripts/exec-cypress.sh
+    ports:
+      - 2080:80
+    depends_on:
+      - joomla-test
+    environment:
+      # CYPRESS_BASE_URL: ''
+      DISPLAY:
+    volumes:
+      - .:/dev_joomla
+      - joomla-data:/joomla-data
+      - joomla-backup:/var/www/html/backups
+      - ~/.Xauthority:/root/.Xauthority:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    working_dir: /cypress-test/tests
+    networks:
+      - joomla-network
+
+  ftpserver:
+    image: stilliard/pure-ftpd
+    environment:
+      PUBLICHOST: localhost
+      FTP_USER_NAME: ftp
+      FTP_USER_PASS: ftp
+      FTP_USER_HOME: /home/ftp
+    ports:
+      - 21:21
+      - 30000-30009:30000-30009
+    volumes:
+      - joomla-data:/home/ftp
+      - joomla-backup:/home/ftp/backups
+    networks:
+      - joomla-network
+
+networks:
+  joomla-network:
+volumes:
+  joomla-data:
+  joomla-backup:
