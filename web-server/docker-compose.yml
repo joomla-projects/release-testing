@@ -63,7 +63,7 @@ services:
     depends_on:
       - joomla-test
     environment:
-      # CYPRESS_BASE_URL: 'https://charvi.joom.ws'
+      # CYPRESS_BASE_URL: ''
       DISPLAY:
     volumes:
       - .:/dev_joomla
