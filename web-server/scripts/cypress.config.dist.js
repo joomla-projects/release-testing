@@ -33,10 +33,10 @@ module.exports = defineConfig({
     password: "password_replace",
     // automatically created from configuration.php
     email: 'email_replace',
-    db_host: 'mysql',
+    db_host: 'db_host_replace',
     db_name: 'db_name_replace',
-    db_user: 'root',
-    db_password: 'example12345678',
+    db_user: 'db_user_replace',
+    db_password: 'db_password_replace',
     db_prefix: 'db_prefix_replace',
     cmsPath: '../../var/www/html',
   },
