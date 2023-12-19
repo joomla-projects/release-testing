@@ -64,3 +64,14 @@ Cypress.Commands.overwrite('doAdministratorLogout', (originalFn) => {
   // Clear the session data
   Cypress.session.clearAllSavedSessions();
 });
+
+Cypress.Commands.add('createArticle', (article) => {
+  cy.visit('/administrator/index.php?option=com_content&task=article.add');
+
+  cy.get('#jform_title').clear().type(article);
+  cy.clickToolbarButton('Save & Close');
+
+  cy.get('#system-message-container').contains('Article saved.').should('exist');
+  cy.contains(article);
+})
+
