@@ -8,6 +8,8 @@ services:
     command: --default-authentication-plugin=mysql_native_password --sql_mode=""
     environment:
       MYSQL_ROOT_PASSWORD: example12345678
+    volumes:
+      - ./joomla-backup:/docker-entrypoint-initdb.d
     networks:
       - joomla-network
 
@@ -17,75 +19,68 @@ services:
     environment:
       PMA_HOST: mysql
     ports:
-      - "2001:80"
+      - "3082:80"
     restart: unless-stopped
     depends_on:
       - mysql
     networks:
       - joomla-network
 
-  joomla-test:
-    container_name: test_joomla
-    image: joomla:5.0 # actual 5.0.0
+  joomla-test.local:
+    container_name: test_joomla_local
+    build: .
     restart: unless-stopped
     ports:
-      - 2005:80
+      - 3081:80
     environment:
       JOOMLA_SITE_NAME: "Joomla Test Site"
-      JOOMLA_ADMIN_USER: admin
+      JOOMLA_ADMIN_USER: "Admin Tester"
       JOOMLA_ADMIN_USERNAME: admin
-      JOOMLA_ADMIN_PASSOWRD: admin12345678
+      JOOMLA_ADMIN_PASSWORD: admin12345678
       JOOMLA_ADMIN_EMAIL: admin@example.com
       JOOMLA_DB_HOST: mysql
       JOOMLA_DB_USER: root
       JOOMLA_DB_PASSWORD: example12345678
       JOOMLA_DB_NAME: joomla
       JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK: 1
+      RESTORE: ${RESTORE}
+      ROOT: ${ROOT}
     volumes:
-      - .:/dev_joomla
-      - joomla-data:/var/www/html
+      - .:${ROOT}
+      - ./joomla-backup:/var/www/html/joomla-backup
+      # - ./joomla-data:/var/www/html
     depends_on:
       - mysql
     networks:
       - joomla-network
 
   cypress:
-    container_name: test_joomla_cypress
+    container_name: test_joomla_cypress_local
     image: cypress/included:12.8.1 # actual 13. + Chrome 116. + Edge 116. + Firefox 117.
     restart: "no"
-    entrypoint: /dev_joomla/scripts/exec-cypress.sh
+    entrypoint: ${ROOT}/scripts/exec-cypress.sh
     ports:
-      - 2080:80
+      - 3080:80
     depends_on:
-      - joomla-test
+      - joomla-test.local
     environment:
-      CYPRESS_BASE_URL: 'http://joomla-test'
+      CYPRESS_BASE_URL: "http://joomla-test.local"
       DISPLAY:
+      JOOMLA_USERNAME: ${USERNAME}
+      JOOMLA_PASSWORD: ${PASSWORD}
+      ROOT: ${ROOT}
     volumes:
-      - .:/dev_joomla
-      - joomla-data:/joomla-data
+      - .:${ROOT}
       - ~/.Xauthority:/root/.Xauthority:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     working_dir: /cypress-test/tests
     networks:
       - joomla-network
 
-  ftpserver:
-    image: stilliard/pure-ftpd
-    environment:
-      PUBLICHOST: localhost
-      FTP_USER_NAME: ftp
-      FTP_USER_PASS: ftp
-      FTP_USER_HOME: /home/ftp
+  mailcatcher:
+    image: schickling/mailcatcher
     ports:
-      - 21:21
-      - 30000-30009:30000-30009
-    volumes:
-      - joomla-data:/home/ftp
-    networks:
-      - joomla-network
+      - 3083:1080
 
 networks:
   joomla-network:
-volumes:
-  joomla-data:

@@ -18,6 +18,7 @@ module.exports = defineConfig({
       'System/integration/api/**/*.cy.{js,jsx,ts,tsx}',
       'System/integration/plugins/**/*.cy.{js,jsx,ts,tsx}',
     ],
+    baseUrl: "url_replace",
     supportFile: 'System/support/index.js',
     scrollBehavior: 'center',
     browser: 'firefox',
@@ -28,8 +29,8 @@ module.exports = defineConfig({
     sitename: 'sitename_replace',
     name: "Admin Tester",
     // email: "admin@example.com",
-    username: "admin",
-    password: "admin12345678",
+    username: "username_replace",
+    password: "password_replace",
     // automatically created from configuration.php
     email: 'email_replace',
     db_host: 'db_host_replace',
