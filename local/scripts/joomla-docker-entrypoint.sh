@@ -116,11 +116,6 @@ fi
         
 
 if [ ! -e index.php ] && [ ! -e libraries/src/Version.php ]; then
-      
-        # if the directory exists and Joomla doesn't appear to be installed AND the permissions of it are root:root, let's chown it (likely a Docker-created directory)
-        if [ "$uid" = '0' ] && [ "$(stat -c '%u:%g' .)" = '0:0' ]; then
-                chown "$user:$group" .
-        fi
 
         echo >&2 "Joomla not found in $PWD - copying now..."
         if [ "$(ls -A)" ]; then
@@ -163,6 +158,9 @@ if [ ! -e index.php ] && [ ! -e libraries/src/Version.php ]; then
                 sed -i 's/^.*\$password.*$/    public \$password = '${JOOMLA_DB_PASSWORD}'/' configuration.php
                 sed -i 's/^.*\$dbprefix.*$/    public \$dbprefix = '${JOOMLA_DB_PREFIX}'/' configuration.php
         fi
+
+        # if the directory exists and Joomla doesn't appear to be installed change permissions
+        chown -R www-data:www-data .
 
         echo >&2 "Complete! Joomla has been successfully copied to $PWD"
 fi
