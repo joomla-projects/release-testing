@@ -493,8 +493,8 @@ Cypress.Commands.add('db_createUser', (userData) => {
   };
   const user = { ...defaultUserOptions, ...userData };
 
-  const groupId = user.group_id ?? 2; // Default the group id to registered
-  delete user.group_id;
+  const groupId = user.group_id ?? 8; // Default the group id to registered
+  // delete user.group_id;
 
   return cy.task('queryDB', createInsertQuery('users', user)).then(async (info) => {
     await cy.task('queryDB', `INSERT INTO #__user_usergroup_map (user_id, group_id) VALUES ('${info.insertId}', '${groupId}')`);
