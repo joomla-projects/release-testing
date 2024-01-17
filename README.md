@@ -1,27 +1,46 @@
-# release-testing
+# Release Testing
+Release testing is an important practice of the Joomla development cycle. It helps ensure that new versions of the CMS are stable, bug-free, and ready for public release. Minor updates of Joomla are released every six (6) Tuesdays (schedule may change). One week prior to the release, the update is set for RC (Release Candidate) and available for testing. People are needed to conduct such tests. The more people that test, the better releases can be.
 
-Temporary Readme for Joomla 5.0 RC Setup
+Don't want to waste time and resources clicking on every single item and testing them all? Here, we made an effort to offer a simple, one-step method for conducting the testing. Our objective was to provide a straightforward and understandable way to handle testing. With the help of our project, you can test a completely new Joomla site or even your own site by using the sql dump of the backed-up database and the backup zip archive for your Joomla site. This one repository handles all of the dependencies, so you don't have to worry about messing with them.
 
-The setup comprises two folders— one for web servers and another for local mode and a run.sh script. To initiate the process, use the command `./run.sh` or `./run.sh <your-website-domain>`.
-For example: `./run.sh https://example.joom.ws/`
+## Pre Requisites
+* Docker: This application relies on Docker to create isolated environments and manage its components efficiently. Please install Docker by following [the official documentation](https://docs.docker.com/get-docker/)
 
-When you execute the command `./run.sh <website-domain>`, the system launches the web-server script. Subsequently, it prompts you for your site username and password. The script then downloads necessary dependencies, and checks for the presence of the configuration.php file in the joomla-backup folder. If the file is not found, the system waits for you to paste the configuration file. Once provided, it inserts environment variables into the Cypress configuration file and runs Cypress tests. Notably, these tests are independent and do not rely on a database.
+* WSL2 (Windows Subsystem for Linux 2): If you're using Windows, WSL2 is essential for running Docker containers seamlessly. First you need to [install your preferred Distro into WSL2](https://learn.microsoft.com/en-us/windows/wsl/install). Then start the WSL Console where you find yourself in a full Linux terminal. 
 
-Alternatively, if you run `./run.sh` without providing any input, the system operates in a local mode. It sets up a database, downloads necessary dependencies, and waits for the configuration file on localhost:3081.
+Open a terminal or command prompt and run the following command to check if Docker is installed and running correctly:
+```bash
+Docker --version
+```
 
-If you do not provide a backup of an existing site it will install a new Joomla! site for you.
+## Structure
+Our release tests are conducted with Cypress. The setup consists of a `tests` folder. The tests can be found in its `System/integration` folder. There are already some sample tests written that correspond to the names of the components in the [CMS release sheet](https://docs.google.com/spreadsheets/d/1ciTeoBmzcNJLvFkxIeOsjmUeZbKj1tHREZfQrm3X1-I/edit#gid=225816438). You can find a comprehensive guide on writing tests here.
 
-The site is available on `localhost:3081` and you can login with \
+To run these tests on your Joomla site, put a zip-archive (excluding the installation folder) and also a sql dump file of an existing site into the folder `local/joomla-backup`.
+
+If you want to run these tests on a fresh joomla installation make sure the joomla-backup folder is empty.
+
+## Installation
+* Clone this repo (when on windows make sure to be working in wsl console):
+```bash
+git clone https://github.com/joomla-projects/release-testing.git
+```
+
+* Double click the `run.sh` file from the repo or run the following command **in a WSL console**.
+```bash
+./run.sh
+```
+
+## Testing
+If you put a complete zip-archive and also a sql dump file from an existing site into the folder `local/joomla-backup` it will set up your own site. Subsequently, it prompts you for your site username and password to run the tests. It may take some time to establish a database connection, so please be patient.
+
+If you do not provide a backup of an existing site it will install a new Joomla! site for you. The site is available on `localhost:3081` and you can login with\
 username: admin \
 password: admin12345678
 
-If you put a complete zip-archive and also a sql dump file from an existing site into the folder `local/joomla-backup` it will set up your own site and ask for your credentials on start.
+The local mode also provides a phpmyadmin that you can reach under `localhost:3082` to see what is going on in the DB. It is also set up a mailcatcher container reachable under `localhost:3083` so you can test the system mail delivery from the site.
 
-The local mode also provides a phpmyadmin that you can reach under `localhost:3082` to see what is going on in the DB.
-
-It is also set up a mailcatcher container reachable under `localhost:3083` so you can test the system mail delivery from the site. 
-
-Afterwards the system automatically executes the tests. 
+Afterwards the system automatically opens the tests.
 
 The default credentials for a new installation are:
 ```
@@ -37,10 +56,3 @@ environment:
       JOOMLA_DB_NAME: joomla
       JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK: 1
 ```
-
-- Use the following command to run all tests:
-`npx cypress run`
-
-- Use the following command to run tests in a specific folder:
-`npx cypress run --spec "tests/cypress/integration/<folder-name>/*.cy.js"`
-For example: `npx cypress run --spec "tests/cypress/integration/administrator/*.cy.js"` runs tets in the administrator folder.
