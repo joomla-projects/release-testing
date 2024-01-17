@@ -35,6 +35,7 @@ fi
 if [ "$backup_restore" = false ]; then
 	username=""
 	password=""
+	echo "No backup archive or db-dump found in the joomla-backup directory."
 	echo "Setting up new Joomla! site for testing."
 fi
 
