@@ -1,0 +1,26 @@
+version: '3.1'
+
+services:
+
+  cypress:
+    container_name: test_joomla_cypress_web
+    image: cypress/included:12.8.1 # actual 13. + Chrome 116. + Edge 116. + Firefox 117.
+    restart: "no"
+    entrypoint: ${ROOT}/scripts/exec-cypress.sh
+    ports:
+      - 2080:80
+    environment:
+      CYPRESS_BASE_URL: ${DOMAIN}
+      DISPLAY:
+      JOOMLA_USERNAME: ${USERNAME}
+      JOOMLA_PASSWORD: ${PASSWORD}
+      ROOT: ${ROOT}
+    volumes:
+      - .:${ROOT}
+      - joomla-backup:/var/www/html/backups
+      - ~/.Xauthority:/root/.Xauthority:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    working_dir: /cypress-test/tests
+
+volumes:
+  joomla-backup:
