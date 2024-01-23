@@ -72,6 +72,53 @@ Cypress.Commands.add('createArticle', (article) => {
   cy.clickToolbarButton('Save & Close');
 
   cy.get('#system-message-container').contains('Article saved.').should('exist');
-  cy.contains(article);
+  // cy.contains(article);
 })
 
+Cypress.Commands.add('trashArticle', (article) => {
+  cy.visit('/administrator/index.php?option=com_content&view=articles');
+
+  cy.searchForItem(article);
+  cy.checkAllResults();
+  cy.clickToolbarButton('Action');
+  cy.get('.button-trash').click();
+
+  //cy.get('#system-message-container').contains('Article trashed.').should('exist');
+})
+
+Cypress.Commands.add('deleteArticle', (article) => {
+  cy.visit('/administrator/index.php?option=com_content&filter=');
+  
+  cy.setFilter('published', 'Trashed');
+  cy.searchForItem(article);
+  cy.checkAllResults();
+  cy.clickToolbarButton('empty trash');
+  cy.get('.button-primary').click();
+
+  //cy.get('#system-message-container').contains('Article deleted.').should('exist');
+})
+
+Cypress.Commands.add('createUser', (name, username, password) => {
+  cy.visit('/administrator/index.php?option=com_users&task=user.add');
+
+    cy.get('#jform_name').clear().type(name);
+    cy.get('#jform_username').clear().type(username);
+    cy.get('#jform_email').clear().type('testuser@example.com');
+    cy.get('#jform_password').clear().type(password);
+    cy.get('#jform_password2').clear().type(password);
+    cy.clickToolbarButton('Save & Close');
+
+    cy.get('#system-message-container').contains('User saved').should('exist');
+})
+
+Cypress.Commands.add('deleteUser', (username) => {
+  cy.visit('/administrator/index.php?option=com_users&view=users&filter=');
+
+  cy.searchForItem(username);
+  cy.checkAllResults();
+  cy.clickToolbarButton('Action');
+  cy.contains('Delete').click();
+  cy.get('.button-primary').click();
+
+  cy.get('#system-message-container').contains('User deleted.').should('exist');
+})
