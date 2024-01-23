@@ -122,3 +122,42 @@ Cypress.Commands.add('deleteUser', (username) => {
 
   cy.get('#system-message-container').contains('User deleted.').should('exist');
 })
+
+
+Cypress.Commands.add('createSuperUser', (name, username, password) => {
+  cy.visit('/administrator/index.php?option=com_users&task=user.add');
+
+  cy.get('#jform_name').clear().type(name);
+  cy.get('#jform_username').clear().type(username);
+  cy.get('#jform_email').clear().type('testuser@example.com');
+  cy.get('#jform_password').clear().type(password);
+  cy.get('#jform_password2').clear().type(password);
+  cy.clickToolbarButton('Save');
+
+  // cy.get('#system-message-container').contains('User saved').should('exist');
+
+  cy.contains('Assigned User Groups').click();
+  cy.contains('Super Users').click();
+  cy.clickToolbarButton('Save & Close');
+})
+
+Cypress.Commands.add('deleteSuperUser', (name) => {
+  cy.doAdministratorLogin();
+  cy.visit('/administrator/index.php?option=com_users&view=users&filter=');
+
+  cy.searchForItem(name);
+  cy.get('.name > a').click();
+  cy.contains('Assigned User Groups').click();
+  cy.contains('Super Users').click();
+  cy.clickToolbarButton('Save & Close');
+
+  cy.visit('/administrator/index.php?option=com_users&view=users&filter=');
+
+  cy.searchForItem(name);
+  cy.checkAllResults();
+  cy.clickToolbarButton('Action');
+  cy.contains('Delete').click();
+  cy.get('.button-primary').click();
+
+  cy.get('#system-message-container').contains('User deleted.').should('exist');
+})

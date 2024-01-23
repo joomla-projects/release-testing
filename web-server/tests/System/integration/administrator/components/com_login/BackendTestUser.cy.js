@@ -1,17 +1,16 @@
 describe('Test in backend that', () => {
-    afterEach(() => cy.task('queryDB', "DELETE FROM #__users WHERE username = 'test'"));
+  beforeEach(() => cy.doAdministratorLogin());
+  // afterEach(() => cy.task('queryDB', "DELETE FROM #__users WHERE username = 'test'"));
     
-    it('can log in with a test user', () => {
-        cy.db_createUser({
-          name: 'automated test user',
-          username: 'test',
-          email: 'test@example.com',
-          password: '098f6bcd4621d373cade4e832627b4f6',
-        }).then(() => {
-          cy.visit('/administrator');
-          cy.get('#mod-login-username').type('test');
-          cy.get('#mod-login-password').type('test');
-          cy.get('#btn-login-submit').click();    
-        });
+  it('can log in with a test user', () => {
+    cy.createSuperUser('test 010', 'test#123', 'testtesttest#123').then(() => {
+      cy.doAdministratorLogout();
+      cy.visit('/administrator');
+      cy.get('#mod-login-username').type('test#123');
+      cy.get('#mod-login-password').type('testtesttest#123');
+      cy.get('#btn-login-submit').click();    
     });
+
+    cy.deleteSuperUser('test 010');
+  });
 });
