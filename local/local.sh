@@ -17,7 +17,8 @@ if [ -f ${backup_archive[0]} ] && [ -f ${backup_dbdump[0]} ]; then
 	read -p "Enter your site username: " username
 
 	# Prompt user for password (-s for privacy)
-	read -p "Enter your site password: " password
+	read -s -p "Enter your site password: " password
+	echo ""
 fi
 
 if [ "$backup_restore" = false ] && [ -f ${backup_archive[0]} ]; then
@@ -35,6 +36,7 @@ fi
 if [ "$backup_restore" = false ]; then
 	username=""
 	password=""
+	echo "No backup archive or db-dump found in the joomla-backup directory."
 	echo "Setting up new Joomla! site for testing."
 fi
 

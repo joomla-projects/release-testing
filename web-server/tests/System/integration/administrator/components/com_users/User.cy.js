@@ -10,8 +10,8 @@ describe('Test in backend that the user form', () => {
     cy.get('#jform_name').clear().type('test user 112');
     cy.get('#jform_username').clear().type('test');
     cy.get('#jform_email').clear().type('test@example.com');
-    cy.get('#jform_password').clear().type('testtesttest');
-    cy.get('#jform_password2').clear().type('testtesttest');
+    cy.get('#jform_password').clear().type('TestTestTest123!!');
+    cy.get('#jform_password2').clear().type('TestTestTest123!!');
     cy.clickToolbarButton('Save & Close');
 
     cy.get('#system-message-container').contains('User saved').should('exist');
@@ -21,7 +21,7 @@ describe('Test in backend that the user form', () => {
   });
 
   it('can delete a test user', () => {
-    cy.createUser('Test user 012', 'test', 'testtesttest').then(() => {
+    cy.createUser('Test user 012', 'test', 'TestTestTest123!!').then(() => {
       cy.visit('/administrator/index.php?option=com_users&view=users&filter=');
 
       cy.searchForItem('Test user 012');

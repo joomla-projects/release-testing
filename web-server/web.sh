@@ -13,8 +13,9 @@ real_config="tests/cypress.config.js"
 read -p "Enter your site username: " username
 
 # Prompt user for password (-s for privacy)
-read -p "Enter your site password: " password
+read -s -p "Enter your site password: " password
 
+echo ""
 echo "Cleaning up the old containers"
 docker compose down --volumes
 
