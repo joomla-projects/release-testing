@@ -1,6 +1,8 @@
 describe('Test in backend that the user form', () => {
   beforeEach(() => cy.doAdministratorLogin());
-  // afterEach(() => cy.task('queryDB', "DELETE FROM #__users WHERE username = 'test'"));
+  afterEach(() => {
+    cy.get('.js-stools-btn-clear').click({ force: true })
+  });
 
   it('can create a new user', () => {
     cy.visit('/administrator/index.php?option=com_users&task=user.add');
@@ -17,21 +19,6 @@ describe('Test in backend that the user form', () => {
 
     cy.deleteUser('test user 112');
   });
-
-  // it('can amend user details', () => {
-  //   cy.createUser().then((id) => {
-  //     cy.visit(`/administrator/index.php?option=com_users&task=user.edit&id=${id}`);
-
-  //     cy.get('#jform_name').clear().type('test edited');
-  //     cy.get('#jform_username').clear().type('testedited');
-  //     cy.get('#jform_password').clear().type('testeditedtest');
-  //     cy.get('#jform_password2').clear().type('testeditedtest');
-  //     cy.get('#jform_email').clear().type('testedited@example.com');
-  //     cy.clickToolbarButton('Save');
-
-  //     cy.get('#system-message-container').contains('User saved.').should('exist');
-  //   });
-  // });
 
   it('can delete a test user', () => {
     cy.createUser('Test user 012', 'test', 'testtesttest').then(() => {

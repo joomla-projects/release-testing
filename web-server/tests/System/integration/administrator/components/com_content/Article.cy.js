@@ -2,7 +2,9 @@ describe('Test in backend that the article form', () => {
   beforeEach(() => {
     cy.doAdministratorLogin();
   });
-  // afterEach(() => cy.deleteArticle())
+  afterEach(() => {
+    cy.get('.js-stools-btn-clear').click({ force: true });
+  });
 
   it('can create an article', () => {
     cy.visit('/administrator/index.php?option=com_content&task=article.add');
@@ -13,19 +15,6 @@ describe('Test in backend that the article form', () => {
     cy.get('#system-message-container').contains('Article saved.').should('exist');
     cy.contains('Test article 001');
   });
-  
-  // it('can toggle featured status on article', () => {
-  //   cy.createArticle('test012').then(() => {
-  //     cy.visit('/administrator/index.php?option=com_content&task=article');
-  //     cy.searchForItem('test012').click();
-
-  //     cy.get('#jform_featured1').click();
-  //     cy.clickToolbarButton('Save & Close');
-
-  //     cy.get('#system-message-container').contains('Article saved.').should('exist');
-  //     cy.contains('test012');
-  //   });
-  // });
 
   it('can archive an article', () => {
     cy.createArticle('test 987').then(() => {

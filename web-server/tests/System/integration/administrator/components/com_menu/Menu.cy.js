@@ -1,8 +1,8 @@
 describe('Test in backend that the user form', () => {
   beforeEach(() => cy.doAdministratorLogin());
-  // after(() => {
-  //   cy.task('queryDB', "DELETE FROM #__menu_types WHERE menutype = 'test'");
-  // })
+  afterEach(() => {
+    cy.get('.js-stools-btn-clear').click({ force: true });
+  });
 
   it('can create a new menu', () => {
     cy.visit('/administrator/index.php?option=com_menus&task=menu.add');

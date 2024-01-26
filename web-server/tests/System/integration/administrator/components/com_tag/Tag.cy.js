@@ -21,6 +21,7 @@ describe('Test in backend that the tag form', () => {
     cy.get('.button-trash').click();
 
     cy.get('#system-message-container').contains('Tag trashed.').should('exist');
+    cy.get('.js-stools-btn-clear').click({ force: true });
   });
 
   it('can delete a tag', () => {
