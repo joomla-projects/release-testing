@@ -5,7 +5,7 @@ rm -rf "${ROOT}/node_modules"
 cd "${ROOT}"
 npm update
 
-echo "Start creating cypress.config.js from Joomla configuration.php"
+echo "Start creating cypress.config.js"
 source  ${ROOT}/scripts/config-setup.sh
 
 echo "Start Cypress"
