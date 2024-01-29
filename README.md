@@ -18,7 +18,7 @@ Our release tests are conducted with Cypress. The setup comprises two folders—
 
 To run these tests on your Joomla site, put a zip-archive (excluding the installation folder) and also a sql dump file of an existing site into the folder `local/joomla-backup`.
 
-If you want to run these tests on a **back up** Joomla live site put the `configuration.php` file of your site in the `web-server/joomla-backup` folder.
+You can also run these tests on a **back up** Joomla live site by providing the **site username and password**.
 
 If you want to run these tests on a fresh joomla installation make sure the `local/joomla-backup` folder is empty.
 
@@ -45,13 +45,13 @@ It will set up your own site. Subsequently, it prompts you for your site **usern
 
 **2. On a back up Joomla site:**
 
-Put the `configuration.php` file of your site in the `web-server/joomla-backup` folder. To initiate the process, use the command:
+To initiate the process, use the following command in the `start.exe` file:
 ```bash
 ./run.sh <your-website-domain>
 ```
 For example: `./run.sh https://example.joom.ws/`
 
-When you execute the command `./run.sh <website-domain>`, the system launches the web-server script. Subsequently, it prompts you for your **site username and password**. The script then downloads necessary dependencies, and checks for the presence of the `configuration.php` file in the `web-server/joomla-backup` folder. If the file is not found, the system waits for you to paste the configuration file. Once provided, it inserts environment variables into the Cypress configuration file and runs Cypress tests. **Notably, these tests are independent and do not rely on a database.**
+When you execute the command `./run.sh <website-domain>`, the system launches the web-server script. Subsequently, it prompts you for your **site username and password**. Once provided, it inserts environment variables into the Cypress configuration file and runs Cypress tests. **Notably, these tests work on your site's database.**
 
 **3. Fresh Joomla installation:**
 
