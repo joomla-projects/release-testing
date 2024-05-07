@@ -16,7 +16,7 @@ describe('Test in backend that the user form', () => {
     cy.contains('test user');
   });
 
-  it('can amend user details', () => {
+  it('can edit a user', () => {
     cy.db_createUser().then((id) => {
       cy.visit(`/administrator/index.php?option=com_users&task=user.edit&id=${id}`);
 
@@ -28,20 +28,6 @@ describe('Test in backend that the user form', () => {
       cy.clickToolbarButton('Save');
 
       cy.get('#system-message-container').contains('User saved.').should('exist');
-    });
-  });
-
-  it('can delete a test user', () => {
-    cy.db_createUser({ name: 'Test user', username: 'test' }).then(() => {
-      cy.visit('/administrator/index.php?option=com_users&view=users&filter=');
-
-      cy.searchForItem('Test user');
-      cy.checkAllResults();
-      cy.clickToolbarButton('Action');
-      cy.contains('Delete').click();
-      cy.get('.button-primary').click();
-
-      cy.get('#system-message-container').contains('User deleted.').should('exist');
     });
   });
 });

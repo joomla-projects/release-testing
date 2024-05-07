@@ -1,0 +1,35 @@
+{
+	"name": "joomla-e2e-testing-suite",
+	"version": "0.2.0",
+	"description": "Joomla tool suite for end-to-end testing with cypress",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/joomla-projects/release-testing.git"
+	},
+	"license": "GPL-2.0-or-later",
+	 "bugs": {
+		"url": "https://github.com/joomla-projects/release-testing/issues"
+	},
+	"homepage": "https://github.com/joomla-projects/release-testing#readme",
+	"keywords": [
+		"Joomla",
+		"e2e",
+		"end-to-end",
+		"Cypress",
+		"testing"
+	],
+	"author": "Charvi Mehra, Martina Scholz",
+	"dependencies": {
+		"joomla-cypress": "^1.0.3",
+		"mochawesome": "^7.1.3",
+		"cypress-mochawesome-reporter": "^3.8.2",
+		"mysql": "^2.18.1",
+		"postgres": "^3.4.3",
+		"smtp-tester": "^2.1.0"
+
+	},
+	"scripts": {
+		"cypress:open": "cypress open",
+    	"cypress:run": "cypress run"
+	}
+}

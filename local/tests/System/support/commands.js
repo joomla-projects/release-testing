@@ -9,58 +9,37 @@ import './commands/api';
 import './commands/config';
 import './commands/db';
 
-const { registerCommands } = require('../../../node_modules/joomla-cypress/src/index.js');
+const { registerCommands } = require('../../node_modules/joomla-cypress/src/index.js');
 
 registerCommands();
 
-Cypress.Commands.overwrite('doFrontendLogin', (originalFn, username, password, useSnapshot = true) => {
-  // Ensure there are valid credentials
-  const user = username ?? Cypress.env('username');
-  const pw = password ?? Cypress.env('password');
-
-  // Do normal login when no snapshot should be used
-  if (!useSnapshot) {
-    // Clear the session data
-    Cypress.session.clearAllSavedSessions();
-
-    // Call the normal function
-    return originalFn(user, pw);
+// Click Joomla Dialog Confirm, isOkay: true = push "ok" button, false = push "cancel" button
+Cypress.Commands.add('clickDialogConfirm', (isOkay) => {
+  let selector = '.joomla-dialog-confirm';
+  if (isOkay) {
+    selector += ' button[data-button-ok]';
+  } else {
+    selector += ' button[data-button-cancel]';
   }
-
-  // Do login through the session
-  return cy.session([user, pw, 'front'], () => originalFn(user, pw), { cacheAcrossSpecs: true });
-});
-
-Cypress.Commands.overwrite('doFrontendLogout', (originalFn) => {
-  // Call the login function
-  originalFn();
-
-  // Clear the session data
-  Cypress.session.clearAllSavedSessions();
+  return cy.get(selector, { timeout: 1000 }).click();
 });
 
 Cypress.Commands.overwrite('doAdministratorLogin', (originalFn, username, password, useSnapshot = true) => {
-  // Ensure there are valid credentials
-  const user = username ?? Cypress.env('username');
-  const pw = password ?? Cypress.env('password');
 
-  // Do normal login when no snapshot should be used
-  if (!useSnapshot) {
-    // Clear the session data
+  if (Cypress.isBrowser('firefox')) {
+    // Clear the session data - Fix for Firefox >= 115
     Cypress.session.clearAllSavedSessions();
-
-    // Call the normal function
-    return originalFn(user, pw);
   }
 
-  // Do login through the session
-  return cy.session([user, pw, 'back'], () => originalFn(user, pw), { cacheAcrossSpecs: true });
+  return originalFn(username, password, useSnapshot);
 });
 
-Cypress.Commands.overwrite('doAdministratorLogout', (originalFn) => {
-  // Call the login function
-  originalFn();
+Cypress.Commands.overwrite('doFrontendLogin', (originalFn, username, password, useSnapshot = true) => {
 
-  // Clear the session data
-  Cypress.session.clearAllSavedSessions();
+  if (Cypress.isBrowser('firefox')) {
+    // Clear the session data - Fix for Firefox >= 115
+    Cypress.session.clearAllSavedSessions();
+  }
+
+  return originalFn(username, password, useSnapshot);
 });

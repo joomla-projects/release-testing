@@ -1,0 +1,53 @@
+include:
+  - ../docker-compose.yml
+services:
+
+  web.local:
+    image: joomla-cypress-web:php-8.3
+    container_name: joomla_cypress_web
+    environment:
+      STARTUP_COMMAND_01: sudo chown docker:docker /home/docker
+      PHP_INI_SESSION__COOKIE_LIFETIME: 86400
+      PHP_INI_SESSION__GC_MAXLIFETIME: 86400
+    depends_on:
+      - mysql
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ${ROOT}/.tools/local/web/www/:/var/www/html
+      - ../../:/usr/src/Projects
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - joomla-cypress
+
+  mysql:
+    image: mysql:8.0
+    container_name: joomla_cypress_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    command: --default-authentication-plugin=mysql_native_password --log_error_suppression_list=MY-013360
+    volumes:
+      - jcy_mysql:/var/lib/mysql
+    networks:
+      - joomla-cypress
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: joomla_cypress_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+      UPLOAD_LIMIT: 999M
+    depends_on:
+      - mysql
+    ports:
+      - 81:80
+    networks:
+      - joomla-cypress
+
+volumes:
+  jcy_mysql:

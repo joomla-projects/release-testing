@@ -1,0 +1,32 @@
+#!/bin/bash
+# @package    Joomla E2E Test Suite
+#
+# @author     Charvi Mehra <https://github.com/charvimehradu>, Martina Scholz <https://github.com/LadySolveig>
+#
+# @copyright  (C) 2024 Open Source Matters, Inc. <http://www.joomla.org>
+# @license    GNU General Public License version 2 or later; see LICENSE.txt
+
+# Set the color variable
+
+BG_RED='\x1b[1;41m\n\n > '
+BG_GREEN='\x1b[1;42m\n\n > '
+BG_YELLOW='\x1b[1;43m\n\n > '
+BG_BLUE='\x1b[1;44m\n\n > '
+
+# Set the color variable
+FC_GREEN='\x1b[1;32m\n > '
+FC_RED='\x1b[1;31m\n > '
+FC_YELLOW='\x1b[1;33m\n > '
+FC_BLUE='\x1b[1;34m\n > '
+
+# Set the color variable
+FC_GREEN_INLINE='\e[1;32m'
+FC_RED_INLINE='\e[1;31m'
+FC_YELLOW_INLINE='\e[1;33m'
+FC_BLUE_INLINE='\e[1;34m'
+FC_BOLDU_INLINE='\e[1;4m'
+FC_BOLD_INLINE='\e[1m'
+
+# Clear the color after that
+CLEAR_COLOR='\n\x1b[K\x1b[0m\n'
+CLEAR_COLOR_INLINE='\e[0m'
