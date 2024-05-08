@@ -499,7 +499,8 @@ setup-site () {
               CONTAINER="web.local"
               COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
 
-              run-command-container "unzip -q /usr/src/Projects/data/install/$VERSION -d /usr/src/Projects/data/sites/$SITE" true
+              echo -e "\n > Remove Database for Joomla $SITE\n"
+              run-command-container "unzip /usr/src/Projects/data/install/$VERSION -d /usr/src/Projects/data/sites/$SITE | stdbuf -o0 sed 's/.*/./' | stdbuf -o0 tr -d '\n\n'" true
 
               run-command-container "ln -sfn /usr/src/Projects/data/sites/$SITE /var/www/html/$SITE" true
               
@@ -577,7 +578,7 @@ remove-site () {
           CONTAINER="web.local"
           COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
           echo -e "\n > Remove Files for Joomla $SITE on Folder: data/sites/${SITE}\n"
-          run-command-container "rm -r /usr/src/Projects/data/sites/$SITE" true
+          run-command-container "rm -rv /usr/src/Projects/data/sites/$SITE | stdbuf -o0 sed 's/.*/./' | stdbuf -o0 tr -d '\n'" true
           run-command-container "unlink /var/www/html/$SITE" true
 
           # Remove database for the site
