@@ -1,5 +1,6 @@
 import './commands';
 import 'joomla-cypress';
+import 'cypress-mochawesome-reporter/register';
 
 before(() => {
   cy.task('startMailServer');

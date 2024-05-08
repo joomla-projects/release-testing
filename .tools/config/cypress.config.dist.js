@@ -27,6 +27,7 @@ module.exports = defineConfig({
 		experimentalRunAllSpecs: true,
 		experimentalStudio: true,
 		experimentalMemoryManagement: true,
+		experimentalInteractiveRunEvents: true,
 	},
 	env: {
 		sitename: '{SITENAME}',

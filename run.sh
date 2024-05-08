@@ -440,76 +440,88 @@ setup-site () {
 
   array=()
   for file in $REAL_ROOT/data/install/*zip; do
-    array=(${array[@]} "$(basename -- "$file")")
+    if [ -f "$file" ]; then
+      array=(${array[@]} "$(basename -- "$file")")
+    fi
   done
 
-  IFS=$'\n' arrInstallZip=($(sort <<<"${array[*]}")); unset IFS
+  if [[ ! ${array[@]} ]]; then
+    echo -e "${BG_RED}Installation unfortunately not possible! ${CLEAR_COLOR}"
+    echo -e " > No ${FC_BOLDU_INLINE}Joomla full package (zip)${CLEAR_COLOR_INLINE} found in your ${FC_BOLDU_INLINE}/data/install${CLEAR_COLOR_INLINE} folder.\n"
+    echo -e "${FC_BLUE}Please download a Joomla full package (zip) and try again${CLEAR_COLOR}"
+    return 1
+  else
+    IFS=$'\n' arrInstallZip=($(sort <<<"${array[@]}")); unset IFS  
 
-  echo -e "${BG_BLUE}Select a zip file for the installation:${CLEAR_COLOR}"
+    echo -e "${BG_BLUE}Select a zip file for the installation:${CLEAR_COLOR}"
 
-  select VERSION in ${arrInstallZip[@]} quit; do
-    case $VERSION in
-      quit)
-        return 1
-        ;;
-      *)
-        if [ -z $VERSION ] || ! [[ ${arrInstallZip[@]} =~ "$VERSION" ]];then
-          echo -e "${FC_YELLOW}No package for installation selected - please choose one available.${CLEAR_COLOR}"
-          continue
-        fi
-
-        tmp_site=$SITE
-        unset SITE
-        # Prompt user for site
-        echo -e "\n"
-        localread "Enter your new site name: " "$tmp_site" SITE
-        if [ -z "$SITE" ]; then
-          echo -e "${FC_RED}No ${FC_BOLDU_INLINE}Site${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined${CLEAR_COLOR}"
+    select VERSION in ${arrInstallZip[@]} quit; do
+      case $VERSION in
+        quit)
           return 1
-        fi
-        SITE=${SITE/' '/'_'}
-        SITE=${SITE//[^[:alnum:]]/'_'}
-        SITE=${SITE/-/_}
-        SITE=${SITE//+(_)/_}
-        SITE=${SITE/#-}
-        SITE=${SITE/%-}
-        SITE=$(echo "$SITE" | sed 's/.*/\L&/')
-        if [ -d $REAL_ROOT/data/sites/$SITE ]; then
-          echo -e "${FC_RED}Site already exists - ${FC_BOLDU_INLINE}data/sites/${SITE}${CLEAR_COLOR_INLINE}${FC_RED_INLINE}${CLEAR_COLOR}"
-          return 1
-        fi
-    
-        echo -e "${FC_BLUE}Create site ${FC_BOLDU_INLINE}${SITE}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} with ${FC_BOLD_INLINE}${VERSION}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE}?${CLEAR_COLOR}"
-        unset USERCONFIRMATION
-        localread "Confirm (y/N): " "" USERCONFIRMATION
-        if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
-          if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
-            mkdir -p $REAL_ROOT/data/sites/$SITE
-
-            echo -e "${FC_BLUE}Unzip Joomla ${FC_BOLD_INLINE}$VERSION${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} on Folder: ${FC_BOLDU_INLINE}$SITE${CLEAR_COLOR}"
-
-            CONTAINER="web.local"
-            COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
-
-            run-command-container "unzip -q /usr/src/Projects/data/install/$VERSION -d /usr/src/Projects/data/sites/$SITE" true
-
-            run-command-container "ln -sfn /usr/src/Projects/data/sites/$SITE /var/www/html/$SITE" true
-            
-            echo -e "${BG_BLUE}Install Joomla $VERSION on Folder: $SITE${CLEAR_COLOR}"
-
-            run-command-container "/usr/src/Projects/.tools/scripts/install-joomla.sh /var/www/html/$SITE sites_$SITE Joomla-$SITE mailcatcher r true"
-            
-            return 0
+          ;;
+        *)
+          if [ -z $VERSION ] || ! [[ ${arrInstallZip[@]} =~ "$VERSION" ]];then
+            echo -e "${FC_YELLOW}No package for installation selected - please choose one available.${CLEAR_COLOR}"
+            continue
           fi
-        else
-          return 1
-        fi
-      ;;
-    esac
 
-  done
+          tmp_site=$SITE
+          unset SITE
+          # Prompt user for site
+          echo -e "\n"
+          localread "Enter your new site name: " "$tmp_site" SITE
+          if [ -z "$SITE" ]; then
+            echo -e "${FC_RED}No ${FC_BOLDU_INLINE}Site${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined${CLEAR_COLOR}"
+            return 1
+          fi
+          SITE=${SITE/' '/'_'}
+          SITE=${SITE//[^[:alnum:]]/'_'}
+          SITE=${SITE/-/_}
+          SITE=${SITE//+(_)/_}
+          SITE=${SITE/#-}
+          SITE=${SITE/%-}
+          SITE=$(echo "$SITE" | sed 's/.*/\L&/')
+          if [ -d $REAL_ROOT/data/sites/$SITE ]; then
+            echo -e "${FC_RED}Site already exists - ${FC_BOLDU_INLINE}data/sites/${SITE}${CLEAR_COLOR_INLINE}${FC_RED_INLINE}${CLEAR_COLOR}"
+            return 1
+          fi
+      
+          echo -e "${FC_BLUE}Create site ${FC_BOLDU_INLINE}${SITE}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} with ${FC_BOLD_INLINE}${VERSION}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE}?${CLEAR_COLOR}"
+          unset USERCONFIRMATION
+          localread "Confirm (y/N): " "" USERCONFIRMATION
+          if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
+            if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
+              mkdir -p $REAL_ROOT/data/sites/$SITE
 
-  return 0
+              echo -e "${FC_BLUE}Unzip Joomla ${FC_BOLD_INLINE}$VERSION${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} on Folder: ${FC_BOLDU_INLINE}$SITE${CLEAR_COLOR}"
+
+              CONTAINER="web.local"
+              COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
+
+              run-command-container "unzip -q /usr/src/Projects/data/install/$VERSION -d /usr/src/Projects/data/sites/$SITE" true
+
+              run-command-container "ln -sfn /usr/src/Projects/data/sites/$SITE /var/www/html/$SITE" true
+              
+              echo -e "${BG_BLUE}Install Joomla $VERSION on Folder: $SITE${CLEAR_COLOR}"
+
+              run-command-container "/usr/src/Projects/.tools/scripts/install-joomla.sh /var/www/html/$SITE sites_$SITE Joomla-$SITE mailcatcher r true"
+              
+              return 0
+            fi
+          else
+            return 1
+          fi
+        ;;
+      esac
+
+    done
+
+    return 0
+    
+  fi
+
+  return 1
 
 }
 
@@ -595,6 +607,7 @@ remove-site () {
 
 # Welcome User and build container if not exists
 
+echo -e "\n"
 echo -e "${BG_BLUE}Welcome to Joomla E2E Test Suite${CLEAR_COLOR}"
 
 echo -e "\n > To run your ${FC_BOLDU_INLINE}remote${CLEAR_COLOR_INLINE} site (e.g. https://example.com) with cypress, use option 1 => remote\n"

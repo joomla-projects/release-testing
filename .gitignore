@@ -3,7 +3,8 @@ data/sites/*
 !data/sites/.gitkeep
 .tools/local/web/www/*
 !.tools/local/web/www/index.php
-.tools/.secret # important 
+.tools/.secret
+# important: do not remove the obove line
 .tools/tmp/*
 !.tools/tmp/.gitkeep
 **/tests/System/output/*
