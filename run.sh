@@ -262,6 +262,10 @@ cypress-start () {
     docker compose -f $REAL_TOOLS/local/compose.yml -f $REAL_TOOLS/local/compose.local.yml up -d --remove-orphans
     echo -e "${BG_BLUE}Open Cypress for site: $SITE and project: $PROJECT${CLEAR_COLOR}"
     cypress-start-feedback
+    if [ $? -eq 1 ]; then
+      cypress-stop
+      echo -e "${BG_YELLOW}Startup process was canceled - please try a restart or restart in debugging mode${CLEAR_COLOR}"
+    fi
     return
   fi
 
@@ -271,13 +275,27 @@ cypress-start () {
 
 # Function to provide feedback after starting Cypress container
 cypress-start-feedback() {
-  echo -e " > ... please wait ..."
+  echo -en ' > ... please wait - Cypress is starting .'
   CONTAINER="joomla_cypress"
+  breakout=0
   while [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; do
-      echo -e " > ... please wait - Cypress is starting ..."
+      echo -n "."
       sleep 2;
+      if [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; then
+        breakout+=1
+        if [ $breakout -gt 1 ] && [ $(($breakout % 5)) == 0 ]; then
+            echo -e "\n${FC_YELLOW} It seems like there is a problem starting Cypress, do you want to cancel?${CLEAR_COLOR}"
+            unset USERCONFIRMATION
+            localread "Confirm (y/N): " "" USERCONFIRMATION
+            if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
+              return 1
+            fi
+            echo -en '\n > ... please wait - we are still trying to start cypress .'
+        fi
+      fi
   done
-  echo -e "${BG_GREEN}http://localhost:8080/vnc.html?autoconnect=true${CLEAR_COLOR}"
+  echo -e "\n${BG_GREEN}http://localhost:8080/vnc.html?autoconnect=true${CLEAR_COLOR}"
+  return 0
 }
 
 # Function to start Cypress container in debug mode
@@ -612,7 +630,7 @@ remove-site () {
 
 # Welcome User and build container if not exists
 
-echo -e "\n"
+echo -e "${FC_BLUE_INLINE}${CLEAR_COLOR_INLINE}\n"
 echo -e "${BG_BLUE}Welcome to Joomla E2E Test Suite${CLEAR_COLOR}"
 
 echo -e "\n > To run your ${FC_BOLDU_INLINE}remote${CLEAR_COLOR_INLINE} site (e.g. https://example.com) with cypress, use option 1 => remote\n"

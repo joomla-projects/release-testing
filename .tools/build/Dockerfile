@@ -5,6 +5,7 @@ RUN set -ex; \
     apt-get update; \
     apt-get install -y \
       bash \
+      curl \
       fluxbox \
       git \
       net-tools \
@@ -71,3 +72,5 @@ USER node
 EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+HEALTHCHECK --interval=6s --timeout=10s --start-period=3s --retries=5 CMD curl -f http://127.0.0.1:8080/vnc.html || exit 1
