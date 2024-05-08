@@ -283,7 +283,7 @@ cypress-start-feedback() {
       sleep 2;
       if [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; then
         breakout+=1
-        if [ $breakout -gt 1 ] && [ $(($breakout % 5)) == 0 ]; then
+        if [ $breakout -gt 1 ] && [ $(($breakout % 20)) == 0 ]; then
             echo -e "\n${FC_YELLOW} It seems like there is a problem starting Cypress, do you want to cancel?${CLEAR_COLOR}"
             unset USERCONFIRMATION
             localread "Confirm (y/N): " "" USERCONFIRMATION
