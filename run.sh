@@ -272,7 +272,11 @@ cypress-start () {
 # Function to provide feedback after starting Cypress container
 cypress-start-feedback() {
   echo -e " > ... please wait ..."
-  sleep 4
+  CONTAINER="joomla_cypress"
+  while [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; do
+      echo -e " > ... please wait - Cypress is starting ..."
+      sleep 2;
+  done
   echo -e "${BG_GREEN}http://localhost:8080/vnc.html?autoconnect=true${CLEAR_COLOR}"
 }
 
