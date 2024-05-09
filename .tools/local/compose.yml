@@ -12,13 +12,11 @@ services:
     depends_on:
       - mysql
     ports:
-      - 80:80
-      - 443:443
+      - ${WEB_LOCAL_PORT}:80
+      - ${WEB_LOCAL_PORT_SSL}:443
     volumes:
       - ${ROOT}/.tools/local/web/www/:/var/www/html
       - ../../:/usr/src/Projects
-    extra_hosts:
-      - host.docker.internal:host-gateway
     networks:
       - joomla-cypress
 

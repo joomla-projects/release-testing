@@ -12,9 +12,9 @@ RUN set -ex; \
       novnc \
       supervisor \
       x11vnc \
-      xvfb \
-      chromium \
-      firefox-esr;
+      xvfb;
+    #   chromium \
+    #   firefox-esr;
 
 # Run Firefox-esr in Cypress Gui
 # RUN unlink /usr/bin/firefox.real && ln -s /usr/bin/firefox-esr /usr/bin/firefox.real
@@ -69,8 +69,9 @@ USER node
 # RUN chmod +x /entrypoint.sh
 # CMD ["/entrypoint.sh"]
 
-EXPOSE 8080
+EXPOSE 5800
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-HEALTHCHECK --interval=6s --timeout=10s --start-period=3s --retries=5 CMD curl -f http://127.0.0.1:8080/vnc.html || exit 1
+# This line sets up a health check for the container.
+HEALTHCHECK --interval=6s --timeout=10s --start-period=3s --retries=5 CMD curl -f http://127.0.0.1:5800/vnc.html || exit 1

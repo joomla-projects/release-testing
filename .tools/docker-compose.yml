@@ -18,7 +18,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     working_dir: /e2e/tests
     ports:
-      - "8080:8080"
+      - "5800:5800"
     networks:
       - joomla-cypress
 
