@@ -66,6 +66,7 @@ case $JOOMLA_LOCAL in
 
     JOOMLA_USERNAME=${JOOMLA_USERNAME:-}
     JOOMLA_PASSWORD=${JOOMLA_PASSWORD:-}
+    JOOMLA_API_TOKEN=${JOOMLA_API_TOKEN:-}
     JOOMLA_SITE=${JOOMLA_SITE:-}
     JOOMLA_PROJECT=${JOOMLA_PROJECT:-local}
 
@@ -75,6 +76,7 @@ case $JOOMLA_LOCAL in
     sed -i "s/{BASE_URL}/$CYPRESS_BASE_URL_ESCAPED/g" $WORKDIR/tests/cypress.config.js
     sed -i "s/{JOOMLA_USERNAME}/$JOOMLA_USERNAME/g" $WORKDIR/tests/cypress.config.js
     sed -i "s/{JOOMLA_PASSWORD}/$JOOMLA_PASSWORD/g" $WORKDIR/tests/cypress.config.js
+    sed -i "s/{JOOMLA_TOKEN}/${JOOMLA_API_TOKEN}/g" $WORKDIR/tests/cypress.config.js
     
     echo "Username and password updated in cypress.config.js"
 

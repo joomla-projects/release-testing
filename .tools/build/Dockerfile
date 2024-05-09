@@ -1,4 +1,4 @@
-FROM cypress/included:13.8.1
+FROM cypress/included:13.9.0
 
 # Install git, supervisor, VNC, & X11 packages
 RUN set -ex; \

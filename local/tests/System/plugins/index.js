@@ -11,6 +11,7 @@ const db = require('./db');
  * @see https://docs.cypress.io/guides/references/configuration#setupNodeEvents
  */
 function setupPlugins(on, config) {
+  // require ("@deploysentinel/cypress-recorder")(on, config); // Uncomment this line to enable the Deploysentinel Recorder - not working with Cypress headless
   on('task', {
     queryDB: (query) => db.queryTestDB(query, config),
     cleanupDB: () => db.deleteInsertedItems(config),

@@ -73,6 +73,7 @@ start-cypress () {
     unset JUSER
     unset JPASSWORD
     unset JDOMAIN
+    unset JAPITOKEN
 
     echo -e "${BG_BLUE}To start the cypress tests on remote site we need some info first${CLEAR_COLOR}"
 
@@ -99,6 +100,13 @@ start-cypress () {
     localread "Enter your site password: " "" JPASSWORD s
     if [ -z $JPASSWORD ]; then
       echo -e "${FC_RED}No ${FC_BOLDU_INLINE}PASSWORD${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined for testing with cypress${CLEAR_COLOR}"
+      return 1
+    fi
+
+    # Prompt user for API-TOKEN (-s for privacy)
+    localread "Enter your site API-TOKEN: " "" JAPITOKEN s
+    if [ -z $JAPITOKEN ]; then
+      echo -e "${FC_RED}No ${FC_BOLDU_INLINE}API-Token${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined for testing with cypress${CLEAR_COLOR}"
       return 1
     fi
 
@@ -283,7 +291,7 @@ cypress-start-feedback() {
       sleep 2;
       if [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; then
         breakout=$(($breakout+1))
-        if [ $breakout -gt 1 ] && [ $(($breakout % 20)) == 0 ]; then
+        if [ $breakout -gt 1 ] && [ $(($breakout % 50)) == 0 ]; then
             echo -e "\n${FC_YELLOW} It seems like there is a problem starting Cypress, do you want to cancel?${CLEAR_COLOR}"
             unset USERCONFIRMATION
             localread "Confirm (y/N): " "" USERCONFIRMATION
@@ -369,41 +377,62 @@ cypress-run () {
 # Function to check if the Docker image for Cypress is built and build it if necessary.
 check-image-build () {
   is_build=$(docker image inspect ${IMAGE_NAME_TAG} > /dev/null 2>&1 && echo "true" || echo "")
+  is_build_web=$(docker image inspect ${WEB_IMAGE_NAME_TAG} > /dev/null 2>&1 && echo "true" || echo "")
+
+  if [ -z ${is_build:-""} ] && [ -z ${is_build_web:-""} ]; then
+    echo -e "${FC_BLUE}No images found - build them for you for you?!!${CLEAR_COLOR}"
+
+    confirm-build-image
+
+    # Build the cypress image
+    BUILD=$REAL_TOOLS/build
+    source $REAL_TOOLS/build/build.sh
+
+    # Build the web.local image
+    BUILD=$REAL_TOOLS/build/web
+    source $REAL_TOOLS/build/web/build.sh
+
+    # Pull all images
+    export-variables
+    docker compose pull -f $REAL_TOOLS/local/compose.yml
+
+    echo -e "${FC_GREEN}Build for cypress and web.local images done${CLEAR_COLOR}"
+
+  fi
 
   if [ -z ${is_build:-""} ]; then
     echo -e "${FC_BLUE}No image for cypress found - building one for you${CLEAR_COLOR}"
-    # exit 1
+    
+    confirm-build-image
 
-    read -rp "Confirm (y/N): " USERCONFIRMBUILD
-    if [[ $USERCONFIRMBUILD = "y" || $USERCONFIRMBUILD = "Y" ]]; then
-      BUILD=$REAL_TOOLS/build
-      source $REAL_TOOLS/build/build.sh
-    else
-      echo -e "${FC_YELLOW}Shutting down Joomla E2E Test Suite${CLEAR_COLOR}"
-      exit 1
-    fi
+    # Build the cypress image
+    BUILD=$REAL_TOOLS/build
+    source $REAL_TOOLS/build/build.sh
 
     echo -e "${FC_GREEN}Image for cypress build done${CLEAR_COLOR}"
   fi
-}
 
-# Function to check if the web image is built and build it if necessary.
-check-web-image-build () {
-  is_build=$(docker image inspect ${WEB_IMAGE_NAME_TAG} > /dev/null 2>&1 && echo "true" || echo "")
-  if [ -z ${is_build:-""} ]; then
+  if [ -z ${is_build_web:-""} ]; then
     echo -e "${FC_BLUE}No image for local webserver found - building one for you${CLEAR_COLOR}"
 
-    unset USERCONFIRMBUILD
-    localread "Confirm (y/N): " "" USERCONFIRMBUILD
-    if [[ $USERCONFIRMBUILD = "y" || $USERCONFIRMBUILD = "Y" ]]; then
-      BUILD=$REAL_TOOLS/build/web
-      source $REAL_TOOLS/build/web/build.sh
-    else
-      echo -e "${FC_YELLOW}Shutting down Joomla E2E Test Suite${CLEAR_COLOR}"
-      exit 1
-    fi
+    confirm-build-image
+
+    # Build the web.local image
+    BUILD=$REAL_TOOLS/build/web
+    source $REAL_TOOLS/build/web/build.sh
 
     echo -e "${FC_GREEN}Image for local webserver build done${CLEAR_COLOR}"
+  fi
+}
+
+confirm-build-image () {
+  unset USERCONFIRMBUILD
+  read -rp "Confirm (y/N): " USERCONFIRMBUILD
+  if [[ $USERCONFIRMBUILD = "y" || $USERCONFIRMBUILD = "Y" ]]; then
+    return 0
+  else
+    echo -e "${FC_YELLOW}Shutting down Joomla E2E Test Suite${CLEAR_COLOR}"
+    exit 1
   fi
 }
 
@@ -426,7 +455,7 @@ check-containers-running() {
 export-variables() {
   export JOOMLA_USERNAME=${JUSER:-"admin"} JOOMLA_PASSWORD=${JPASSWORD:-"admin12345678"} DOMAIN=${JDOMAIN:-"http:web.local/${SITE:-"test"}"} \
          JOOMLA_PROJECT=${PROJECT:-"local"} JOOMLA_SITE=${SITE:-"test"} ROOT=$REAL_ROOT WEB_LOCAL_PORT=${WEB_LOCAL_PORT:-"8080"} \
-         WEB_LOCAL_PORT_SSL=${WEB_LOCAL_PORT_SSL:-"4433"}
+         WEB_LOCAL_PORT_SSL=${WEB_LOCAL_PORT_SSL:-"4433"} JOOMLA_API_TOKEN=${JAPITOKEN:-}
 }
 
 # Function to run the command in a container
@@ -522,7 +551,6 @@ setup-site () {
               CONTAINER="web.local"
               COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
 
-              echo -e "\n > Remove Database for Joomla $SITE\n"
               run-command-container "unzip /usr/src/Projects/data/install/$VERSION -d /usr/src/Projects/data/sites/$SITE | stdbuf -o0 sed 's/.*/./' | stdbuf -o0 tr -d '\n'" true
 
               run-command-container "ln -sfn /usr/src/Projects/data/sites/$SITE /var/www/html/$SITE" true
