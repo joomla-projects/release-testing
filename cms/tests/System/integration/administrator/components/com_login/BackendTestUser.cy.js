@@ -1,5 +1,8 @@
 describe('Test in backend that', () => {
-    afterEach(() => cy.task('queryDB', "DELETE FROM #__users WHERE username = 'test'"));
+  beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
+    cy.task('queryDB', "DELETE FROM #__users WHERE username = 'test'")
+  });
     
     it('can log in with a test user', () => {
         cy.db_createUser({

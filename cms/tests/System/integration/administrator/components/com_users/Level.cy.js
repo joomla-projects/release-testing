@@ -1,5 +1,8 @@
 describe('Test in backend that the user access level form', () => {
-  beforeEach(() => cy.doAdministratorLogin());
+  beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
+    cy.doAdministratorLogin()
+  });
   afterEach(() => cy.task('queryDB', "DELETE FROM #__viewlevels WHERE title = 'test level'"));
 
   it('can create a new access level', () => {

@@ -1,5 +1,6 @@
 describe('Test in backend that the user group list', () => {
   beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
     cy.doAdministratorLogin();
     cy.visit('/administrator/index.php?option=com_users&view=groups&filter=');
   });

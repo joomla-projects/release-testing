@@ -1,5 +1,8 @@
 describe('Test in backend that the newsfeed form', () => {
-  beforeEach(() => cy.doAdministratorLogin());
+  beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
+    cy.doAdministratorLogin()
+  });
   afterEach(() => cy.task('queryDB', "DELETE FROM #__newsfeeds WHERE name = 'Test newsfeed'"));
 
   it('can create a newsfeed', () => {

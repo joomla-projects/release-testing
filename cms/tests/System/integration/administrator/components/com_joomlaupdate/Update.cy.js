@@ -1,5 +1,6 @@
 describe('Test the update retrieval logic', () => {
   beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
     cy.doAdministratorLogin();
   });
 

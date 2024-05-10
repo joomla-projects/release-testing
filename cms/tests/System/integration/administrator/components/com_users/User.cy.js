@@ -1,5 +1,8 @@
 describe('Test in backend that the user form', () => {
-  beforeEach(() => cy.doAdministratorLogin());
+  beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
+    cy.doAdministratorLogin()
+  });
   afterEach(() => cy.task('queryDB', "DELETE FROM #__users WHERE username = 'test'"));
 
   it('can create a new user', () => {

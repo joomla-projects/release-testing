@@ -1,5 +1,6 @@
 describe('Test in backend that the application configuration', () => {
   beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
     cy.task('clearEmails');
     cy.doAdministratorLogin();
     cy.visit('/administrator/index.php?option=com_config');

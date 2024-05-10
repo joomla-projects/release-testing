@@ -402,11 +402,8 @@ check-image-build () {
     BUILD=$REAL_TOOLS/build/web
     source $REAL_TOOLS/build/web/build.sh
 
-    # Pull all images
-    export-variables
-    docker compose pull -f $REAL_TOOLS/local/compose.yml
-
     echo -e "${FC_GREEN}Build for cypress and web.local images done${CLEAR_COLOR}"
+    return 0
 
   fi
 
@@ -420,6 +417,7 @@ check-image-build () {
     source $REAL_TOOLS/build/build.sh
 
     echo -e "${FC_GREEN}Image for cypress build done${CLEAR_COLOR}"
+    return 0
   fi
 
   if [ -z ${is_build_web:-""} ]; then
@@ -432,6 +430,7 @@ check-image-build () {
     source $REAL_TOOLS/build/web/build.sh
 
     echo -e "${FC_GREEN}Image for local webserver build done${CLEAR_COLOR}"
+    return 0
   fi
 }
 
@@ -654,7 +653,7 @@ remove-site () {
           echo -e "\n > Remove API-Token environment variable $API_LABEL if exists in .secret for Joomla $SITE\n"
           if [ -f $REAL_ROOT/.tools/.secret ]; then
             API_LINE=$(grep "^${API_LABEL}" $REAL_ROOT/.tools/.secret)
-            sed -i "\:$API_LINE:d" $REAL_ROOT/.tools/.secret
+            sed -i "\:$API_LINE:d" $REAL_ROOT/.tools/.secret 2>/dev/null
           fi
 
           echo -e "${BG_GREEN}Site $SITE and Database removed from system${CLEAR_COLOR}"

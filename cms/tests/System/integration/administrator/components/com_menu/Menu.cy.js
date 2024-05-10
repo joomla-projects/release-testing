@@ -1,6 +1,9 @@
 describe('Test in backend that the user form', () => {
-  beforeEach(() => cy.doAdministratorLogin());
-  afterEach(() => cy.task('queryDB', "DELETE FROM #__menu_types WHERE menutype = 'test'"));
+  beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
+    cy.task('queryDB', "DELETE FROM #__menu_types WHERE menutype = 'test'")
+    cy.doAdministratorLogin()
+  });
 
   it('can create a new menu', () => {
     cy.visit('/administrator/index.php?option=com_menus&task=menu.add');

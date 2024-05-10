@@ -1,5 +1,6 @@
 describe('Test in backend that the custom fields list', () => {
   beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
     cy.doAdministratorLogin();
     cy.visit('/administrator/index.php?option=com_fields&view=fields&context=com_content.article&filter=');
   });

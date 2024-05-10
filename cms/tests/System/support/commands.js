@@ -54,14 +54,20 @@ Cypress.Commands.add('skipWhen', function (expression) {
   }
 })
 
+Cypress.Commands.add('skipWhenNot', function (expression) {
+  // Skip the test if the expression is true
+  if (!expression) {
+    this.skip()
+  }
+})
+
 // Cleanup Data via API on remote Sites
 /**  Cleanup a test banner if it exists */
 Cypress.Commands.add('cleanupBannerIfExist', () => {
   Cypress.log({ name: 'cleanupBannerIfExist' })
 
   if (Cypress.config('baseUrl').includes('web.local')) {
-    cy.task('queryDB', "DELETE FROM #__banners WHERE name = 'Test banner'")
-    return true
+    return cy.task('queryDB', "DELETE FROM #__banners WHERE name = 'Test banner'")
   } else {
     return cleanupBannerIfExist()
   }

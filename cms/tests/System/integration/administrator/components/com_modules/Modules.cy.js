@@ -1,5 +1,6 @@
 describe('Test in backend that the module list', () => {
   beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
     cy.doAdministratorLogin();
     cy.visit('/administrator/index.php?option=com_modules&view=modules&filter=');
   });

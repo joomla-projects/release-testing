@@ -1,5 +1,6 @@
 describe('Test in backend that the categories list', () => {
   beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
     cy.doAdministratorLogin();
     cy.visit('/administrator/index.php?option=com_categories&view=categories&extension=com_content&filter=');
   });

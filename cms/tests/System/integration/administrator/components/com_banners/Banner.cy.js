@@ -1,11 +1,9 @@
 describe('Test in backend that the banners form', () => {
   beforeEach(() => {
+    cy.cleanupBannerIfExist()
     cy.doAdministratorLogin();
     // Clear the filter
     cy.visit('/administrator/index.php?option=com_banners&filter=');
-  });
-  beforeEach(() => {
-    cy.cleanupBannerIfExist()
   });
 
   it('can create a banner', () => {

@@ -1,5 +1,6 @@
 describe('Test in backend that the media manager', () => {
   beforeEach(() => {
+    cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
     cy.doAdministratorLogin(Cypress.env('username'), Cypress.env('password'));
     cy.intercept('*format=json*task=api.files*').as('getMedia');
   });
