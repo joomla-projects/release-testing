@@ -43,7 +43,9 @@ ARG GROUP_ID=${GROUP_ID:-0}
 
 # do not log creating new user, otherwise there could be a lot of messages
 RUN userdel -f node \
+    && if getent passwd ${USER_ID}; then usermod -u 1000 $(id -u -n ${USER_ID}); fi \
     && if getent group node ; then groupdel node; fi \
+    && if getent group ${GROUP_ID} ; then groupmod -g 1000 $(getent group ${GROUP_ID} | cut -d: -f1); fi \
     && groupadd -g ${GROUP_ID} node \
     && useradd -l -u ${USER_ID} -g node node \
     && install -d -m 0755 -o node -g node /home/node
