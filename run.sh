@@ -165,7 +165,9 @@ start-cypress () {
 
     # Prompt user for site
     # List all available sites
-    readarray -t array < <(find $REAL_ROOT/data/sites/ -mindepth 1 -maxdepth 1 -type d -printf '%P\n')
+    IFS=$'\n'
+      array=($(find $REAL_ROOT/data/sites/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \;))
+    unset IFS
 
     IFS=$'\n' arrSites=($(sort <<<"${array[*]}")); unset IFS
 
@@ -602,8 +604,9 @@ remove-site () {
   check-containers-running
 
   # Get a list of available sites
-  readarray -t array < <(find $REAL_ROOT/data/sites/ -mindepth 1 -maxdepth 1 -type d -printf '%P\n')
-
+  IFS=$'\n'
+    array=($(find $REAL_ROOT/data/sites/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \;))
+  unset IFS
   # Sort the list of sites
   IFS=$'\n' arrSites=($(sort <<<"${array[*]}")); unset IFS
 
