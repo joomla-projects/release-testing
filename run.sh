@@ -75,7 +75,17 @@ start-cypress () {
     unset JDOMAIN
     unset JAPITOKEN
 
-    echo -e "${BG_BLUE}To start the cypress tests on remote site we need some info first${CLEAR_COLOR}"
+    echo -e "${BG_YELLOW}[Caution!] - Never perform tests on an active live site!${CLEAR_COLOR}"
+
+    echo -e " > Please make sure that you are working on a ${FC_BOLDU_INLINE}COPY${CLEAR_COLOR_INLINE} of your site ${FC_BOLDU_INLINE}AND${CLEAR_COLOR_INLINE} database that you can delete afterwards.\n"
+
+    unset USERCONFIRMATION
+    localread "Confirm (y/N): " "" USERCONFIRMATION
+    if [[ $USERCONFIRMATION != "y" && $USERCONFIRMATION != "Y" ]]; then
+      return 1
+    fi
+
+    echo -e "${BG_BLUE}To start the cypress tests on a remote site we need some info first${CLEAR_COLOR}"
 
     localread "Enter your site url (with http(s)://): " "$tmp_domain" JDOMAIN
     if [ -z $JDOMAIN ]; then
@@ -111,11 +121,11 @@ start-cypress () {
     fi
 
     # Prompt user for project
-    tmp_project=${PROJECT:-"remote"}
+    tmp_project=${PROJECT:-"cms"}
     unset PROJECT
 
     echo -e "${FC_BLUE}Cypress needs a ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} as project where the tests are stored${CLEAR_COLOR}"
-    echo -e "Defaul folder: ${FC_BOLDU_INLINE}remote${CLEAR_COLOR_INLINE}\n"
+    echo -e "Defaul folder: ${FC_BOLDU_INLINE}cms${CLEAR_COLOR_INLINE}\n"
 
     localread "Enter your project: " "$tmp_project" PROJECT
     if [ -z $PROJECT ] || [ ! -d $REAL_ROOT/$PROJECT ]; then
@@ -129,10 +139,10 @@ start-cypress () {
 
   if [ $CYPRESS_OPTION == "local" ]; then
 
-    check-web-image-build
+    check-image-build
 
     # Prompt user for project
-    tmp_project=${PROJECT:-"local"}
+    tmp_project=${PROJECT:-"cms"}
     tmp_site=$SITE
     unset PROJECT
     unset SITE
@@ -143,7 +153,7 @@ start-cypress () {
     echo -e "${BG_BLUE}To start the local cypress test we need some info first${CLEAR_COLOR}"
 
     echo -e "${FC_BLUE}Cypress needs a ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} as project where the tests are stored${CLEAR_COLOR}"
-    echo -e "Defaul folder: ${FC_BOLDU_INLINE}local${CLEAR_COLOR_INLINE}\n"
+    echo -e "Defaul folder: ${FC_BOLDU_INLINE}cms${CLEAR_COLOR_INLINE}\n"
 
     localread "Enter your project: " "$tmp_project" PROJECT
     if [ -z $PROJECT ] || [ ! -d $REAL_ROOT/$PROJECT ]; then
@@ -454,7 +464,7 @@ check-containers-running() {
 # Function to export repeatedly used variables
 export-variables() {
   export JOOMLA_USERNAME=${JUSER:-"admin"} JOOMLA_PASSWORD=${JPASSWORD:-"admin12345678"} DOMAIN=${JDOMAIN:-"http:web.local/${SITE:-"test"}"} \
-         JOOMLA_PROJECT=${PROJECT:-"local"} JOOMLA_SITE=${SITE:-"test"} ROOT=$REAL_ROOT WEB_LOCAL_PORT=${WEB_LOCAL_PORT:-"8080"} \
+         JOOMLA_PROJECT=${PROJECT:-"cms"} JOOMLA_SITE=${SITE:-"test"} ROOT=$REAL_ROOT WEB_LOCAL_PORT=${WEB_LOCAL_PORT:-"8080"} \
          WEB_LOCAL_PORT_SSL=${WEB_LOCAL_PORT_SSL:-"4433"} JOOMLA_API_TOKEN=${JAPITOKEN:-}
 }
 
@@ -482,7 +492,7 @@ run-command-container() {
 # Returns 0 on success, 1 on failure.
 setup-site () {
 
-  check-web-image-build
+  check-image-build
   CONTAINER="web.local"
   check-containers-running
   CONTAINER="mysql"
@@ -582,7 +592,7 @@ setup-site () {
 # It prompts the user to select a site from a list of available sites and confirms the removal before proceeding.
 remove-site () {
   # Check if web image is built
-  check-web-image-build
+  check-image-build
 
   # Check if containers are running
   CONTAINER="web.local"
@@ -659,10 +669,9 @@ remove-site () {
 
 # Welcome User and build container if not exists
 
-echo -e "${FC_BLUE_INLINE}${CLEAR_COLOR_INLINE}\n"
-echo -e "${BG_BLUE}Welcome to Joomla E2E Test Suite${CLEAR_COLOR}"
+echo -e "\n${BG_BLUE}Welcome to Joomla E2E Test Suite${CLEAR_COLOR}"
 
-echo -e "\n > To run your ${FC_BOLDU_INLINE}remote${CLEAR_COLOR_INLINE} site (e.g. https://example.com) with cypress, use option 1 => remote\n"
+echo -e " > To run your ${FC_BOLDU_INLINE}remote${CLEAR_COLOR_INLINE} site (e.g. https://example.com) with cypress, use option 1 => remote\n"
 echo -e " > To run a Joomla ${FC_BOLDU_INLINE}local${CLEAR_COLOR_INLINE} site locally with cypress, use option 2 => local\n"
 echo -e " > To ${FC_BOLDU_INLINE}manage${CLEAR_COLOR_INLINE} your local Joomla sites (create and delete), use option 3 => manage\n"
 echo -e " > If you encounter any problems, first try to ${FC_BOLDU_INLINE}shutdown${CLEAR_COLOR_INLINE} your container and start again 4 => shutdown"
@@ -672,7 +681,6 @@ echo -e "${FC_BLUE}Let's get started ... ${CLEAR_COLOR}"
 
 # Check the build status of the cypress and php image.
 check-image-build
-check-web-image-build
 
 selections=(remote local manage shutdown)
 

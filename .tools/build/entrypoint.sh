@@ -68,7 +68,7 @@ case $JOOMLA_LOCAL in
     JOOMLA_PASSWORD=${JOOMLA_PASSWORD:-}
     JOOMLA_API_TOKEN=${JOOMLA_API_TOKEN:-}
     JOOMLA_SITE=${JOOMLA_SITE:-}
-    JOOMLA_PROJECT=${JOOMLA_PROJECT:-local}
+    JOOMLA_PROJECT=${JOOMLA_PROJECT:-cms}
 
 
     # Update Cypress configuration file with the provided values
