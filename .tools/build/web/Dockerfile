@@ -36,6 +36,7 @@ RUN sudo apt-get install -y unzip
 RUN sudo apt-get install -y php-pear
 RUN sudo apt-get install -y nano
 RUN sudo apt-get install -y curl
+RUN sudo apt-get install -y pv
 RUN sudo apt-get install -y php${PHP_VERSION}-xdebug
 RUN sudo npm install -g bun
 

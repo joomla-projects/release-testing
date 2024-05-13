@@ -6,7 +6,6 @@
 # @copyright  (C) 2023-2024 Open Source Matters, Inc. <http://www.joomla.org>
 # @license    GNU General Public License version 2 or later; see LICENSE.txt
 
-
 # Setup root directory
 REAL_ROOT=$(realpath $(dirname $0))
 REAL_TOOLS=$(realpath $REAL_ROOT/.tools)
@@ -75,7 +74,7 @@ start-cypress () {
     unset JDOMAIN
     unset JAPITOKEN
 
-    echo -e "${BG_YELLOW}[Caution!] - Never perform tests on an active live site!${CLEAR_COLOR}"
+    printf "%s\n\n" "$(bg::yellow "[Caution!] - Never perform tests on an active live site!")"
 
     echo -e " > Please make sure that you are working on a ${FC_BOLDU_INLINE}COPY${CLEAR_COLOR_INLINE} of your site ${FC_BOLDU_INLINE}AND${CLEAR_COLOR_INLINE} database that you can delete afterwards.\n"
 
@@ -84,8 +83,8 @@ start-cypress () {
     if [[ $USERCONFIRMATION != "y" && $USERCONFIRMATION != "Y" ]]; then
       return 1
     fi
-
-    echo -e "${BG_BLUE}To start the cypress tests on a remote site we need some info first${CLEAR_COLOR}"
+    
+    printf "%s\n\n" "$(bg::blue "To start the cypress tests on a remote site we need some info first")"
 
     localread "Enter your site url (with http(s)://): " "$tmp_domain" JDOMAIN
     if [ -z $JDOMAIN ]; then
@@ -150,7 +149,7 @@ start-cypress () {
     JUSER="admin"
     JPASSWORD="admin12345678"
 
-    echo -e "${BG_BLUE}To start the local cypress test we need some info first${CLEAR_COLOR}"
+    printf "%s\n\n" "$(bg::blue "To start the local cypress test we need some info first")"
 
     echo -e "${FC_BLUE}Cypress needs a ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} as project where the tests are stored${CLEAR_COLOR}"
     echo -e "Defaul folder: ${FC_BOLDU_INLINE}cms${CLEAR_COLOR_INLINE}\n"
@@ -225,7 +224,7 @@ start-cypress () {
         check-image-build
         echo -e "${FC_BLUE}Running Cypress in headless mode${CLEAR_COLOR}"
         cypress-run
-        echo -e "${BG_GREEN}Cypress tests done - reports can be found in folder System/output/reports${CLEAR_COLOR}"
+        printf "%s\n\n" "$(bg::green "Cypress tests done - reports can be found in folder System/output/reports")"
 			  continue
 			  ;;
 			restart)
@@ -272,7 +271,7 @@ cypress-start () {
   # Check if Cypress option is set to "remote"
   if [ $CYPRESS_OPTION == "remote" ]; then
     docker compose -f $REAL_TOOLS/docker-compose.yml up -d --remove-orphans
-    echo -e "${BG_BLUE}Open Cypress for site: $JDOMAIN${CLEAR_COLOR}"
+    printf "%s\n\n" "$(bg::blue "Open Cypress for site: $JDOMAIN")"
     cypress-start-feedback
     return
   fi
@@ -280,41 +279,60 @@ cypress-start () {
   # Check if Cypress option is set to "local"
   if [ $CYPRESS_OPTION == "local" ]; then
     docker compose -f $REAL_TOOLS/local/compose.yml -f $REAL_TOOLS/local/compose.local.yml up -d --remove-orphans
-    echo -e "${BG_BLUE}Open Cypress for site: $SITE and project: $PROJECT${CLEAR_COLOR}"
+    printf "%s\n\n" "$(bg::blue "Open Cypress for site: $SITE and project: $PROJECT")"
     cypress-start-feedback
     if [ $? -eq 1 ]; then
       cypress-stop
-      echo -e "${BG_YELLOW}Startup process was canceled - please try a restart or restart in debugging mode${CLEAR_COLOR}"
+      printf "%s\n\n" "$(bg::yellow "Startup process was canceled - please try a restart or restart in debugging mode")"
     fi
     return
   fi
 
   # If no valid Cypress start option is provided
-  echo -e "${BG_RED}No valid Cypress start option provided - Please try again${CLEAR_COLOR}"
+  printf "%s\n\n" "$(bg::red "No valid Cypress start option provided - Please try again")"
 }
 
 # Function to provide feedback after starting Cypress container
 cypress-start-feedback() {
-  echo -en ' > ... please wait - Cypress is starting .'
+  echo -en " > ... please wait - Cypress is starting ."
   CONTAINER="joomla_cypress"
   breakout=0
-  while [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; do
+  unset key
+  if [ ! "$(docker ps -q -f name=$CONTAINER)" ]; then
+    echo -e "\n${FC_RED}Cypress container could not be started${CLEAR_COLOR}"
+    return 1
+  fi
+  while [ "`docker inspect -f '{{.State.Running}}' $CONTAINER`" != "true" ] || [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; do
       echo -n "."
       sleep 2;
-      if [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; then
+      if [ "`docker inspect -f '{{.State.Running}}' $CONTAINER `" != "true" ] || [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; then
         breakout=$(($breakout+1))
         if [ $breakout -gt 1 ] && [ $(($breakout % 50)) == 0 ]; then
-            echo -e "\n${FC_YELLOW} It seems like there is a problem starting Cypress, do you want to cancel?${CLEAR_COLOR}"
+            echo -e "\n${FC_YELLOW} Starting Cypress takes a bit longer than expected, giving it a chance and wait?${CLEAR_COLOR}"
             unset USERCONFIRMATION
-            localread "Confirm (y/N): " "" USERCONFIRMATION
-            if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
+            localread "Confirm (y/N): " "y" USERCONFIRMATION
+            if [[ $USERCONFIRMATION = "n" || $USERCONFIRMATION = "N" ]]; then
+              unset USERCONFIRMATION
+              echo -e "\n${FC_YELLOW} Restart Cypress Container in detached mode for debugging?${CLEAR_COLOR}"
+              localread "Confirm (y/N): " "" USERCONFIRMATION
+              if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "y" ]]; then
+                echo -e '\n > Restart cypress container in detached mode for debugging'
+                cypress-debug
+                break
+              fi
+              echo -e "\n${FC_RED}Cypress container could not be started${CLEAR_COLOR}"
               return 1
             fi
-            echo -en '\n > ... please wait - we are still trying to start cypress .'
+            echo -en ' > ... please wait - we are still trying to start cypress .'
         fi
       fi
   done
-  echo -e "\n${BG_GREEN}http://localhost:5800/vnc.html?autoconnect=true${CLEAR_COLOR}"
+  if [ ! "$(docker ps -q -f name=$CONTAINER)" ] || [ "`docker inspect -f '{{.State.Running}}' $CONTAINER`" != "true" ]; then
+    echo -e "\n${FC_RED}Cypress container could not be started${CLEAR_COLOR}"
+    return 1
+  fi
+  echo -e "\n"
+  printf "%s\n\n" "$(bg::green "http://localhost:5800/vnc.html?autoconnect=true")"
   return 0
 }
 
@@ -324,7 +342,7 @@ cypress-debug () {
   export-variables
 
   if [ $CYPRESS_OPTION == "remote" ]; then
-    echo -e "${BG_BLUE}Open Cypress for site: $JDOMAIN${CLEAR_COLOR}"
+    printf "%s\n\n" "$(bg::blue "Open Cypress for site: $JDOMAIN")"
     cypress-start-feedback-debug
     docker compose -f $REAL_TOOLS/docker-compose.yml up --remove-orphans
     return
@@ -332,18 +350,17 @@ cypress-debug () {
 
   if [ $CYPRESS_OPTION == "local" ]; then
     docker compose -f $REAL_TOOLS/local/compose.yml -f $REAL_TOOLS/local/compose.local.yml up --remove-orphans
-    echo -e "${BG_BLUE}Open Cypress for site: $SITE and project: $PROJECT${CLEAR_COLOR}"
+    printf "%s\n\n" "$(bg::blue "Open Cypress for site: $SITE and project: $PROJECT")"
     cypress-start-feedback-debug
     return
   fi
 
-  echo -e "${BG_RED}No valid Cypress start option provided - Please try again${CLEAR_COLOR}"
+  printf "%s\n\n" "$(bg::red "No valid Cypress start option provided - Please try again")"
 }
 
 # Function to provide feedback after starting Cypress container in debug mode
 cypress-start-feedback-debug() {
-	echo -e "${BG_GREEN}access to cypress via http://localhost:5800/vnc.html?autoconnect=true after full startup ${CLEAR_COLOR}"
-
+	printf "%s\n\n" "$(bg::green "access to cypress via http://localhost:5800/vnc.html?autoconnect=true after full startup")"
 }
 
 # Function to run Cypress tests in a container in headless mode
@@ -509,14 +526,14 @@ setup-site () {
   done
 
   if [[ ! ${array[@]} ]]; then
-    echo -e "${BG_RED}Installation unfortunately not possible! ${CLEAR_COLOR}"
+    printf "%s\n\n" "$(bg::red "Installation unfortunately not possible!")"
     echo -e " > No ${FC_BOLDU_INLINE}Joomla full package (zip)${CLEAR_COLOR_INLINE} found in your ${FC_BOLDU_INLINE}/data/install${CLEAR_COLOR_INLINE} folder.\n"
     echo -e "${FC_BLUE}Please download a Joomla full package (zip) and try again${CLEAR_COLOR}"
     return 1
   else
     IFS=$'\n' arrInstallZip=($(sort <<<"${array[@]}")); unset IFS  
 
-    echo -e "${BG_BLUE}Select a zip file for the installation:${CLEAR_COLOR}"
+    printf "%s\n\n" "$(bg::blue "Select a zip file for the installation:")"
 
     select VERSION in ${arrInstallZip[@]} quit; do
       case $VERSION in
@@ -562,11 +579,11 @@ setup-site () {
               CONTAINER="web.local"
               COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
 
-              run-command-container "unzip /usr/src/Projects/data/install/$VERSION -d /usr/src/Projects/data/sites/$SITE | stdbuf -o0 sed 's/.*/./' | stdbuf -o0 tr -d '\n'" true
+              run-command-container "unzip /usr/src/Projects/data/install/$VERSION -d /usr/src/Projects/data/sites/$SITE | pv -l -s \$(unzip -Z -1 /usr/src/Projects/data/install/$VERSION | wc -l) > \/dev\/null" true
 
               run-command-container "ln -sfn /usr/src/Projects/data/sites/$SITE /var/www/html/$SITE" true
               
-              echo -e "${BG_BLUE}Install Joomla $VERSION on Folder: $SITE${CLEAR_COLOR}"
+              printf "%s\n\n" "$(bg::blue "Install Joomla $VERSION on Folder: $SITE")"
 
               run-command-container "/usr/src/Projects/.tools/scripts/install-joomla.sh /var/www/html/$SITE sites_$SITE Joomla-$SITE mailcatcher r true"
               
@@ -611,7 +628,7 @@ remove-site () {
   IFS=$'\n' arrSites=($(sort <<<"${array[*]}")); unset IFS
 
   # Prompt the user to select a site to remove
-  echo -e "${BG_BLUE}Select a local site to remove:${CLEAR_COLOR}"
+  printf "%s\n\n" "$(bg::blue "Select a local site to remove:")"
   unset SITE
   select SITE in ${arrSites[@]} quit; do
     case $SITE in
@@ -632,7 +649,7 @@ remove-site () {
         fi
 
         # Confirm the removal with the user
-        echo -e "${BG_YELLOW}Remove Joomla $SITE on Folder: data/sites/${SITE}${CLEAR_COLOR}"
+        printf "%s\n\n" "$(bg::yellow "Remove Joomla $SITE on Folder: data/sites/${SITE}")"
         echo -e "${FC_YELLOW}Are you sure?${CLEAR_COLOR}"
         read -rp "Confirm (y/N): " USERCONFIRMATION
         if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
@@ -641,7 +658,7 @@ remove-site () {
           CONTAINER="web.local"
           COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
           echo -e "\n > Remove Files for Joomla $SITE on Folder: data/sites/${SITE}\n"
-          run-command-container "rm -rv /usr/src/Projects/data/sites/$SITE | stdbuf -o0 sed 's/.*/./' | stdbuf -o0 tr -d '\n'" true
+          run-command-container "rm -rv /usr/src/Projects/data/sites/$SITE | pv -l -s \$(du -a /usr/src/Projects/data/sites/$SITE | wc -l) > \/dev\/null" true
           run-command-container "unlink /var/www/html/$SITE" true
 
           # Remove database for the site
@@ -659,7 +676,7 @@ remove-site () {
             sed -i "\:$API_LINE:d" $REAL_ROOT/.tools/.secret 2>/dev/null
           fi
 
-          echo -e "${BG_GREEN}Site $SITE and Database removed from system${CLEAR_COLOR}"
+          printf "%s\n\n" "$(bg::green "Site $SITE and Database removed from system")"
         fi
         break
         ;;
@@ -671,7 +688,8 @@ remove-site () {
 
 # Welcome User and build container if not exists
 
-echo -e "\n${BG_BLUE}Welcome to Joomla E2E Test Suite${CLEAR_COLOR}"
+printf "%s\n\n" "$(bg::blue "Welcome to Joomla E2E Test Suite")"
+
 
 echo -e " > To run your ${FC_BOLDU_INLINE}remote${CLEAR_COLOR_INLINE} site (e.g. https://example.com) with cypress, use option 1 => remote\n"
 echo -e " > To run a Joomla ${FC_BOLDU_INLINE}local${CLEAR_COLOR_INLINE} site locally with cypress, use option 2 => local\n"
@@ -706,11 +724,11 @@ select opt in ${selections[@]} quit; do
       start-cypress
       ;;
     manage)
-      echo -e "${BG_BLUE}Manage local Joomla sites${CLEAR_COLOR}"
+      printf "%s\n\n" "$(bg::blue "Manage local Joomla sites")"
       select siteopt in create remove quit; do
         case $siteopt in
           create)
-            echo -e "${BG_BLUE}Setup new local Joomla site${CLEAR_COLOR}"
+            printf "%s\n\n" "$(bg::blue "Setup new local Joomla site")"
             setup-site
             break
             ;;
@@ -729,7 +747,7 @@ select opt in ${selections[@]} quit; do
       ;;
     shutdown)
       cypress-stop
-      echo -e "${BG_BLUE}All containers down - ready to restart!${CLEAR_COLOR}"
+      printf "%s\n\n" "$(bg::blue "All containers down - ready to restart!")"
       ;;
     quit)
       cypress-stop

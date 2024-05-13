@@ -17,6 +17,12 @@ if [ -f $TOOLS_ROOT/.env ]; then
     export $(cat $TOOLS_ROOT/.env | grep -v '#' | sed 's/\r$//' | awk '/=/ {print $1}' )
 fi
 
+# Override environment variables from project from je2e.env file
+if [ -f $WORKDIR/tests/je2e.env ]; then
+    # Load Environment Variables
+    export $(cat $WORKDIR/tests/je2e.env  | grep -v '#' | sed 's/\r$//' | awk '/=/ {print $1}' )
+fi
+
 # Load variables from .secret file
 if [ -f $TOOLS_ROOT/.secret ]; then
     # Load Environment Variables - API-Token
@@ -147,11 +153,16 @@ chown node:node $WORKDIR/tests/package.json $WORKDIR/tests/package-lock.json
 
 # Install the assets
 if [ -f $WORKDIR/tests/package.json ]; then
-  echo "Cleaning the assets"
-  rm -rf $WORKDIR/tests/node_modules
   echo -e " > Installing the assets (takes a while!)"
   cd $WORKDIR/tests/
-  npm ci
+  case ${NPM_PREFER_OFFLINE:-false} in
+    true|yes|y|1)
+      npm ci --cache ~/.npm --prefer-offline
+      ;;
+    *)
+      npm ci --cache ~/.npm
+      ;;
+  esac
 fi
 
 export DISPLAY=:0
