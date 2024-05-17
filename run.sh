@@ -302,12 +302,13 @@ cypress-start-feedback() {
     echo -e "\n${FC_RED}Cypress container could not be started${CLEAR_COLOR}"
     return 1
   fi
+
   while [ "`docker inspect -f '{{.State.Running}}' $CONTAINER`" != "true" ] || [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; do
       echo -n "."
       sleep 2;
-      if [ "`docker inspect -f '{{.State.Running}}' $CONTAINER `" != "true" ] || [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; then
+      if [ "`docker inspect -f '{{.State.Running}}' $CONTAINER`" != "true" ] || [ "`docker inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; then
         breakout=$(($breakout+1))
-        if [ $breakout -gt 1 ] && [ $(($breakout % 50)) == 0 ]; then
+        if [ $breakout -gt 1 ] && [ $(($breakout % 60)) == 0 ]; then
             echo -e "\n${FC_YELLOW} Starting Cypress takes a bit longer than expected, giving it a chance and wait?${CLEAR_COLOR}"
             unset USERCONFIRMATION
             localread "Confirm (y/N): " "y" USERCONFIRMATION

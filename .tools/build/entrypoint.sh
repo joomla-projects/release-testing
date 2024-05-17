@@ -153,16 +153,30 @@ chown node:node $WORKDIR/tests/package.json $WORKDIR/tests/package-lock.json
 
 # Install the assets
 if [ -f $WORKDIR/tests/package.json ]; then
-  echo -e " > Installing the assets (takes a while!)"
-  cd $WORKDIR/tests/
-  case ${NPM_PREFER_OFFLINE:-false} in
-    true|yes|y|1)
-      npm ci --cache ~/.npm --prefer-offline
+  case ${NPM_DEPS_INSTALL:-smart} in
+    always)
+      echo "Cleaning the assets"
+      rm -rf $WORKDIR/tests/node_modules
+      echo -e " > Installing the assets (takes a while!)"
+      cd $WORKDIR/tests/
+      npm ci
       ;;
     *)
-      npm ci --cache ~/.npm
+      if [ -d $WORKDIR/tests/node_modules ] && [[ $(find "$WORKDIR/tests/node_modules" -type d -mtime +1 -print) ]]; then
+        echo "Assets already installed but older than 1 day"
+        echo "Cleaning the assets"
+        rm -rf $WORKDIR/tests/node_modules
+        echo -e " > Installing the assets (takes a while!)"
+        cd $WORKDIR/tests/
+        npm ci
+      else
+        echo "Assets already installed"
+        echo "Skipping npm install"
+      fi
       ;;
   esac
+  
+  
 fi
 
 export DISPLAY=:0

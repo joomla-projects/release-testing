@@ -8,3 +8,4 @@ data/sites/*
 .tools/tmp/*
 !.tools/tmp/.gitkeep
 **/tests/System/output/*
+**/tests/cypress/downloads/**
