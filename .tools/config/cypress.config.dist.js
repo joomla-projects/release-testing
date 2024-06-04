@@ -16,7 +16,7 @@ module.exports = defineConfig({
 			'System/integration/administrator/**/*.cy.{js,jsx,ts,tsx}',
 			// 'System/integration/site/**/*.cy.{js,jsx,ts,tsx}',
 			// 'System/integration/api/**/*.cy.{js,jsx,ts,tsx}',
-			// 'System/integration/plugins/**/*.cy.{js,jsx,ts,tsx}',
+			'System/integration/plugins/**/*.cy.{js,jsx,ts,tsx}',
 		],
 		baseUrl: "{BASE_URL}",
 		supportFile: 'System/support/index.js',
