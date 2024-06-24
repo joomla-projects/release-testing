@@ -580,7 +580,7 @@ setup-site () {
               CONTAINER="web.local"
               COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
 
-              run-command-container "unzip /usr/src/Projects/data/install/$VERSION -d /usr/src/Projects/data/sites/$SITE | pv -l -s \$(unzip -Z -1 /usr/src/Projects/data/install/$VERSION | wc -l) > \/dev\/null" true
+              run-command-container "unzip \"/usr/src/Projects/data/install/$VERSION\" -d /usr/src/Projects/data/sites/$SITE | pv -l -s \$(unzip -Z -1 \"/usr/src/Projects/data/install/$VERSION\" | wc -l) > \/dev\/null" true
 
               run-command-container "ln -sfn /usr/src/Projects/data/sites/$SITE /var/www/html/$SITE" true
               
