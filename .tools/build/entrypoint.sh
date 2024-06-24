@@ -162,7 +162,11 @@ if [ -f $WORKDIR/tests/package.json ]; then
       npm ci
       ;;
     *)
-      if [ -d $WORKDIR/tests/node_modules ] && [[ $(find "$WORKDIR/tests/node_modules" -type d -mtime +1 -print) ]]; then
+      if [ ! -d $WORKDIR/tests/node_modules ]; then
+        echo -e " > Installing the assets (takes a while!)"
+        cd $WORKDIR/tests/
+        npm ci
+      elif [ -d $WORKDIR/tests/node_modules ] && [[ $(find "$WORKDIR/tests/node_modules" -type d -mtime +1 -print) ]]; then
         echo "Assets already installed but older than 1 day"
         echo "Cleaning the assets"
         rm -rf $WORKDIR/tests/node_modules
