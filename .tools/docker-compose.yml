@@ -6,7 +6,9 @@ services:
     restart: 'on-failure'
     environment:
       CYPRESS_BASE_URL: ${DOMAIN}
-      DISPLAY: $DISPLAY
+      # If DISPLAY variable is not set (e.g. on macOS) default
+      # to an empty string to prevent docker-compose warnings.
+      DISPLAY: ${DISPLAY:-}
       DISPLAY_WIDTH: "1920"
       DISPLAY_HEIGHT: "1080"
       JOOMLA_USERNAME: "${JOOMLA_USERNAME}"
