@@ -17,9 +17,36 @@ dbHost='mysql'
 dbDriver='mysqli'
 secret=$(openssl rand -hex 8)
 
+# Function to compare version numbers
+function version_lt() {
+	[ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" != "$1" ]
+}
+
+# Check sed >= 4.8 is used or install newer version
+function upgrade_sed_if_needed() {
+
+	# Get the current version of sed
+	current_sed_version=$(sed --version 2>/dev/null | head -n1 | awk '{print $4}')
+
+	# Define the required version
+	required_sed_version="4.8"
+
+	# Check if sed needs to be updated
+	if version_lt "$required_sed_version" "$current_sed_version"; then
+		echo " > Command sed has version $current_sed_version and is now being upgraded"
+		sudo /usr/src/Projects/.tools/scripts/upgrade-sed.sh > /tmp/upgrade-sed.log 2>&1
+		current_sed_version=$(sed --version 2>/dev/null | head -n1 | awk '{print $4}')
+
+	fi
+	echo " > Command sed has version $current_sed_version"
+}
+
 # Change the working directory
 cd $root
 echo -e " > Doing setup on ${root}"
+
+# Check sed >= 4.8 is used or install newer version
+upgrade_sed_if_needed
 
 if [ -f $root/administrator/cache/autoload_psr4.php ]; then
 	rm -f $root/administrator/cache/autoload_psr4.php
