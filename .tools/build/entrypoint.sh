@@ -6,6 +6,10 @@
 # @copyright  (C) 2024 Open Source Matters, Inc. <http://www.joomla.org>
 # @license    GNU General Public License version 2 or later; see LICENSE.txt
 
+# Temporary file that is deleted when the script is terminated
+TMP=/tmp/$(basename $0).$$
+trap 'rm -rf $TMP' 0
+
 set -ex
 
 WORKDIR="/e2e"
@@ -79,11 +83,15 @@ case $JOOMLA_LOCAL in
 
     # Update Cypress configuration file with the provided values
     CYPRESS_BASE_URL_ESCAPED=$(printf '%s\n' "$CYPRESS_BASE_URL" | sed -e 's/[\/&]/\\&/g')
-    sed -i "s/{BASE_URL}/$CYPRESS_BASE_URL_ESCAPED/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{JOOMLA_USERNAME}/$JOOMLA_USERNAME/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{JOOMLA_PASSWORD}/$JOOMLA_PASSWORD/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{JOOMLA_TOKEN}/${JOOMLA_API_TOKEN}/g" $WORKDIR/tests/cypress.config.js
-    
+    # Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
+    #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
+    #       sed: couldn't open temporary file: Permission denied
+    sed -e "s/{BASE_URL}/$CYPRESS_BASE_URL_ESCAPED/g" \
+        -e "s/{JOOMLA_USERNAME}/$JOOMLA_USERNAME/g" \
+        -e "s/{JOOMLA_PASSWORD}/$JOOMLA_PASSWORD/g" \
+        -e "s/{JOOMLA_TOKEN}/${JOOMLA_API_TOKEN}/g" \
+        $WORKDIR/tests/cypress.config.js > $TMP && cp $TMP $WORKDIR/tests/cypress.config.js
+
     echo "Username and password updated in cypress.config.js"
 
     echo "Configuration updated successfully!"
@@ -120,14 +128,18 @@ case $JOOMLA_LOCAL in
     API_LABEL=$(printf "%s" ${LABEL} | tr '[:lower:]' '[:upper:]')
 
     # Define the site propperly
-    sed -i "s/{SITENAME}/$SITENAME/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{DB_NAME}/$DB_NAME/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{DB_PREFIX}/$DB_PREFIX/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{SITE_PATH}/$SITE_PATH_SED/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{BASE_URL}/$CYPRESS_BASE_URL_ESCAPED/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{JOOMLA_USERNAME}/$JOOMLA_USERNAME/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{JOOMLA_PASSWORD}/$JOOMLA_PASSWORD/g" $WORKDIR/tests/cypress.config.js
-    sed -i "s/{JOOMLA_TOKEN}/${!API_LABEL}/g" $WORKDIR/tests/cypress.config.js
+    # Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
+    #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
+    #       sed: couldn't open temporary file: Permission denied
+    sed -e "s/{SITENAME}/$SITENAME/g" \
+        -e "s/{DB_NAME}/$DB_NAME/g" \
+        -e "s/{DB_PREFIX}/$DB_PREFIX/g" \
+        -e "s/{SITE_PATH}/$SITE_PATH_SED/g" \
+        -e "s/{BASE_URL}/$CYPRESS_BASE_URL_ESCAPED/g" \
+        -e "s/{JOOMLA_USERNAME}/$JOOMLA_USERNAME/g" \
+        -e "s/{JOOMLA_PASSWORD}/$JOOMLA_PASSWORD/g" \
+        -e "s/{JOOMLA_TOKEN}/${!API_LABEL}/g" \
+        $WORKDIR/tests/cypress.config.js > $TMP && cp $TMP $WORKDIR/tests/cypress.config.js
 
     # Symlink test data into the site
     if [ ! -d $SITE_ROOT/tests/data ]; then

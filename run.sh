@@ -681,7 +681,10 @@ remove-site () {
           echo -e "\n > Remove API-Token environment variable $API_LABEL if exists in .secret for Joomla $SITE\n"
           if [ -f $REAL_ROOT/.tools/.secret ]; then
             API_LINE=$(grep "^${API_LABEL}" $REAL_ROOT/.tools/.secret)
-            sed -i "\:$API_LINE:d" $REAL_ROOT/.tools/.secret 2>/dev/null
+            # Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
+            #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
+            #       sed: couldn't open temporary file: Permission denied
+            sed "\:$API_LINE:d" $REAL_ROOT/.tools/.secret >$TMP 2>/dev/null && cp $TMP $REAL_ROOT/.tools/.secret
           fi
 
           printf "%s\n\n" "$(bg::green "Site $SITE and Database removed from system")"
