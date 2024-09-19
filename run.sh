@@ -20,34 +20,41 @@ then
   . $REAL_TOOLS/scripts/.colors
 fi
 
+# Function for reading user input if the variable is empty.
+# Arguments:
+#   $1 – prompt – The input prompt.
+#   $2 – default_value – The given default value, to be taken on empty return.
+#   $3 – variable – The global variable to be set.
+#   $4 – additional – Additional read options, e.g. 's' for silent mode (input chars are not echoed)
+#
+# This implementation is compatible with using bash 3.2 in macOS without:
+#   -e option (use readline e.g. for filename completion) and
+#   -i option (text to be placed into the buffer).
+#
 function localread() {
-  L_LABEL=$1
-  L_DEFAULT=$2
-  L_VAR=$3
-  L_ADDITIONAL=$4
+  local prompt="$1"
+  local default_value="$2"
+  local variable="$3"
+  local additional="$4"
 
-  if [ -z "${!L_VAR}" ];
-  then
-	# Using workaround because OSX supports only bash 3.2 which doesn't support
-	if [ "${BASH_VERSINFO:-0}" -ge 4 ];
-	then
-	  read "-${L_ADDITIONAL}rep" "${L_LABEL} " -i "${L_DEFAULT}" "${L_VAR}"
-	else
-	  # BASH 3.2 compatible code start
-	  if [ ! -z "${L_DEFAULT}" ];
-	  then
-		L_LABEL="${L_LABEL} [${L_DEFAULT}]"
-	  fi
-
-	  if read "-${L_ADDITIONAL}rep" "${L_LABEL} " "${L_VAR}" && [[ ${L_VAR} ]]; then
-		  return 0
-	  else
-		  printf -v "${L_VAR}" %s "${L_DEFAULT}"
-	  fi
-	fi
-	# BASH 3.2 compatible code end
+  # Is the variable not set and an input is required?
+  if [ -z "${!variable}" ] ; then
+      # Is a default value given?
+      if [ -n "${default_value}" ] ; then
+        prompt="${prompt} [${default_value}]"
+      fi
+      # Separate prompt from input
+      prompt="${prompt}: "
+      # [-s] silent
+      # -r do not use backslash \ as an escape char
+      # -p next argument is the prompt
+      read "-${additional}rp" "${prompt}" "${variable}"
+      # Input is empty and default is set?
+      if [ -z "${!variable}" -a -n "${default_value}" ]; then
+        # Use the default value.
+        printf -v "${variable}" "%s" "${default_value}"
+      fi
   fi
-  # echo -e "\n"
 }
 
 # Function to start Cypress tests
@@ -79,14 +86,14 @@ start-cypress () {
     echo -e " > Please make sure that you are working on a ${FC_BOLDU_INLINE}COPY${CLEAR_COLOR_INLINE} of your site ${FC_BOLDU_INLINE}AND${CLEAR_COLOR_INLINE} database that you can delete afterwards.\n"
 
     unset USERCONFIRMATION
-    localread "Confirm (y/N): " "" USERCONFIRMATION
+    localread "Confirm (y/N)" "" USERCONFIRMATION
     if [[ $USERCONFIRMATION != "y" && $USERCONFIRMATION != "Y" ]]; then
       return 1
     fi
     
     printf "%s\n\n" "$(bg::blue "To start the cypress tests on a remote site we need some info first")"
 
-    localread "Enter your site url (with http(s)://): " "$tmp_domain" JDOMAIN
+    localread "Enter your site url (with http(s)://)" "$tmp_domain" JDOMAIN
     if [ -z $JDOMAIN ]; then
       echo -e "${FC_RED}No site url defined for testing with cypress${CLEAR_COLOR}"
       return 1
@@ -99,21 +106,21 @@ start-cypress () {
       return 1
     fi
 
-    localread "Enter your site username: " "$tmp_user" JUSER
+    localread "Enter your site username" "$tmp_user" JUSER
     if [ -z $JUSER ]; then
       echo -e "${FC_RED}No ${FC_BOLDU_INLINE}USER${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined for testing with cypress${CLEAR_COLOR}"
       return 1
     fi
 
     # Prompt user for password (-s for privacy)
-    localread "Enter your site password: " "" JPASSWORD s
+    localread "Enter your site password" "" JPASSWORD s
     if [ -z $JPASSWORD ]; then
       echo -e "${FC_RED}No ${FC_BOLDU_INLINE}PASSWORD${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined for testing with cypress${CLEAR_COLOR}"
       return 1
     fi
 
     # Prompt user for API-TOKEN (-s for privacy)
-    localread "Enter your site API-TOKEN: " "" JAPITOKEN s
+    localread "Enter your site API-TOKEN" "" JAPITOKEN s
     if [ -z $JAPITOKEN ]; then
       echo -e "${FC_RED}No ${FC_BOLDU_INLINE}API-Token${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined for testing with cypress${CLEAR_COLOR}"
       return 1
@@ -126,7 +133,7 @@ start-cypress () {
     echo -e "${FC_BLUE}Cypress needs a ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} as project where the tests are stored${CLEAR_COLOR}"
     echo -e "Defaul folder: ${FC_BOLDU_INLINE}cms${CLEAR_COLOR_INLINE}\n"
 
-    localread "Enter your project: " "$tmp_project" PROJECT
+    localread "Enter your project" "$tmp_project" PROJECT
     if [ -z $PROJECT ] || [ ! -d $REAL_ROOT/$PROJECT ]; then
       echo -e "${FC_RED}No ${FC_BOLDU_INLINE}project${CLEAR_COLOR_INLINE}${FC_RED} defined for testing with cypress${CLEAR_COLOR}"
       echo -e " > Please create a project ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}$ and try again\n"
@@ -154,7 +161,7 @@ start-cypress () {
     echo -e "${FC_BLUE}Cypress needs a ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} as project where the tests are stored${CLEAR_COLOR}"
     echo -e "Defaul folder: ${FC_BOLDU_INLINE}cms${CLEAR_COLOR_INLINE}\n"
 
-    localread "Enter your project: " "$tmp_project" PROJECT
+    localread "Enter your project" "$tmp_project" PROJECT
     if [ -z $PROJECT ] || [ ! -d $REAL_ROOT/$PROJECT ]; then
       echo -e "${FC_RED}No ${FC_BOLDU_INLINE}project${CLEAR_COLOR_INLINE}${FC_RED} defined for testing with cypress${CLEAR_COLOR}"
       echo -e " > Please create a project ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}$ and try again\n"
@@ -311,11 +318,11 @@ cypress-start-feedback() {
         if [ $breakout -gt 1 ] && [ $(($breakout % 60)) == 0 ]; then
             echo -e "\n${FC_YELLOW} Starting Cypress takes a bit longer than expected, giving it a chance and wait?${CLEAR_COLOR}"
             unset USERCONFIRMATION
-            localread "Confirm (y/N): " "y" USERCONFIRMATION
+            localread "Confirm (y/N)" "y" USERCONFIRMATION
             if [[ $USERCONFIRMATION = "n" || $USERCONFIRMATION = "N" ]]; then
               unset USERCONFIRMATION
               echo -e "\n${FC_YELLOW} Restart Cypress Container in detached mode for debugging?${CLEAR_COLOR}"
-              localread "Confirm (y/N): " "" USERCONFIRMATION
+              localread "Confirm (y/N)" "" USERCONFIRMATION
               if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "y" ]]; then
                 echo -e '\n > Restart cypress container in detached mode for debugging'
                 cypress-debug
@@ -388,7 +395,7 @@ cypress-run () {
         echo -e "${FC_BLUE}Enter additional command params (optional)${CLEAR_COLOR}"
         echo -e " > e.g. --spec 'System/integration/administrator/components/com_content/*'\n"
 
-        localread "=> Command (optional): " "${tmp_cy_command_additional}" cy_command_additional
+        localread "=> Command (optional)" "${tmp_cy_command_additional}" cy_command_additional
 
         run-command-container "cd /e2e/tests && cypress run --browser ${cy_browser} ${cy_command_additional}" true
         break
@@ -551,7 +558,7 @@ setup-site () {
           unset SITE
           # Prompt user for site
           echo -e "\n"
-          localread "Enter your new site name: " "$tmp_site" SITE
+          localread "Enter your new site name" "$tmp_site" SITE
           if [ -z "$SITE" ]; then
             echo -e "${FC_RED}No ${FC_BOLDU_INLINE}Site${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined${CLEAR_COLOR}"
             return 1
@@ -570,7 +577,7 @@ setup-site () {
       
           echo -e "${FC_BLUE}Create site ${FC_BOLDU_INLINE}${SITE}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} with ${FC_BOLD_INLINE}${VERSION}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE}?${CLEAR_COLOR}"
           unset USERCONFIRMATION
-          localread "Confirm (y/N): " "" USERCONFIRMATION
+          localread "Confirm (y/N)" "" USERCONFIRMATION
           if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
             if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
               mkdir -p $REAL_ROOT/data/sites/$SITE
@@ -674,7 +681,10 @@ remove-site () {
           echo -e "\n > Remove API-Token environment variable $API_LABEL if exists in .secret for Joomla $SITE\n"
           if [ -f $REAL_ROOT/.tools/.secret ]; then
             API_LINE=$(grep "^${API_LABEL}" $REAL_ROOT/.tools/.secret)
-            sed -i "\:$API_LINE:d" $REAL_ROOT/.tools/.secret 2>/dev/null
+            # Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
+            #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
+            #       sed: couldn't open temporary file: Permission denied
+            sed "\:$API_LINE:d" $REAL_ROOT/.tools/.secret >$TMP 2>/dev/null && cp $TMP $REAL_ROOT/.tools/.secret
           fi
 
           printf "%s\n\n" "$(bg::green "Site $SITE and Database removed from system")"

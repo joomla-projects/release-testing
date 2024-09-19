@@ -6,6 +6,9 @@
 # @copyright  (C) 2024 Open Source Matters, Inc. <http://www.joomla.org>
 # @license    GNU General Public License version 2 or later; see LICENSE.txt
 
+# Temporary file that is deleted when the script is terminated
+TMP=/tmp/$(basename $0).$$
+trap 'rm -rf $TMP' 0
 
 # Setup root directory
 root=$1
@@ -20,6 +23,9 @@ secret=$(openssl rand -hex 8)
 # Change the working directory
 cd $root
 echo -e " > Doing setup on ${root}"
+
+# Check sed >= 4.8 is used or install newer version
+upgrade_sed_if_needed
 
 if [ -f $root/administrator/cache/autoload_psr4.php ]; then
 	rm -f $root/administrator/cache/autoload_psr4.php
@@ -59,12 +65,16 @@ fi
 
 # Setup configuration file
 cp $(dirname $(dirname $0))/config/configuration.php $root/configuration.php
-sed -i "s/{SITE}/$site/g" $root/configuration.php
-sed -i "s/{DBHOST}/$dbHost/g" $root/configuration.php
-sed -i "s/{DBNAME}/$dbName/g" $root/configuration.php
-sed -i "s/{SMTPHOST}/$smtpHost/g" $root/configuration.php
-sed -i "s/{PATH}/${root//\//\\/}/g" $root/configuration.php
-sed -i "s/{SECRET}/$secret/g" $root/configuration.php
+# Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
+#       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
+#       sed: couldn't open temporary file: Permission denied
+sed -e "s/{SITE}/$site/g" \
+    -e "s/{DBHOST}/$dbHost/g" \
+    -e "s/{DBNAME}/$dbName/g" \
+    -e "s/{SMTPHOST}/$smtpHost/g" \
+    -e "s/{PATH}/${root//\//\\/}/g" \
+    -e "s/{SECRET}/$secret/g" \
+	$root/configuration.php > $TMP && cp $TMP $root/configuration.php
 
 # Define install folder
 installFolder=$root/installation
@@ -77,7 +87,10 @@ fi
 if [[ -z $dbHost || $dbHost == 'mysql'* ]]; then
 	echo -e " > Create Joomla DB with mysql"
 
-	sed -i "s/{DBDRIVER}/mysqli/g" $root/configuration.php
+    # Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
+    #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
+    #       sed: couldn't open temporary file: Permission denied
+	sed "s/{DBDRIVER}/mysqli/g" $root/configuration.php > $TMP && cp $TMP $root/configuration.php
 	dbDriver='mysqli'
 
 	echo -e " > Waiting for database server"
@@ -94,7 +107,10 @@ fi
 
 if [[ $dbHost == 'postgres'* ]]; then
 	echo -e " > Create Joomla DB with postgres"
-	sed -i "s/{DBDRIVER}/pgsql/g" $root/configuration.php
+	# Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
+    #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
+    #       sed: couldn't open temporary file: Permission denied
+	sed "s/{DBDRIVER}/pgsql/g" $root/configuration.php > $TMP && cp $TMP $root/configuration.php
 	dbDriver='pgsql'
 	export PGPASSWORD=root
 
