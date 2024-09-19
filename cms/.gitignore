@@ -1,0 +1,3 @@
+*.bak
+cypress.config.js
+node_modules

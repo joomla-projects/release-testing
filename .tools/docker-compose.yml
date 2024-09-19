@@ -1,0 +1,27 @@
+services:
+
+  cypress:
+    image: joomla-cypress-included:13.14.2
+    container_name: joomla_cypress
+    restart: 'on-failure'
+    environment:
+      CYPRESS_BASE_URL: ${DOMAIN}
+      DISPLAY: $DISPLAY
+      DISPLAY_WIDTH: "1920"
+      DISPLAY_HEIGHT: "1080"
+      JOOMLA_USERNAME: "${JOOMLA_USERNAME}"
+      JOOMLA_PASSWORD: "${JOOMLA_PASSWORD}"
+      JOOMLA_API_TOKEN: "${JOOMLA_API_TOKEN}"
+      JOOMLA_LOCAL: "no"
+    volumes:
+      - ../:/usr/src/Projects
+      - ../${JOOMLA_PROJECT}:/e2e
+      - /etc/localtime:/etc/localtime:ro
+    working_dir: /e2e/tests
+    ports:
+      - "5800:5800"
+    networks:
+      - joomla-cypress
+
+networks:
+  joomla-cypress:
