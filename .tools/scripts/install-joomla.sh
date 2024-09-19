@@ -24,9 +24,6 @@ secret=$(openssl rand -hex 8)
 cd $root
 echo -e " > Doing setup on ${root}"
 
-# Check sed >= 4.8 is used or install newer version
-upgrade_sed_if_needed
-
 if [ -f $root/administrator/cache/autoload_psr4.php ]; then
 	rm -f $root/administrator/cache/autoload_psr4.php
 fi
