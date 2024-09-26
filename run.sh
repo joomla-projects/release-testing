@@ -99,12 +99,6 @@ start-cypress () {
       return 1
     fi
 
-    wg_result=$(wget --max-redirect=0 --spider -S $JDOMAIN 2>&1 | grep "HTTP/" | awk '{print $2}')
-
-    if [ -z $wg_result ] || [ $wg_result -lt 200 ] || [ $wg_result -ge 400 ] ; then
-      echo -e "${FC_RED}Is your site up? Can't reach ${FC_BOLDU_INLINE}$JDOMAIN${CLEAR_COLOR_INLINE}${FC_RED_INLINE} for testing with cypress${CLEAR_COLOR}"
-      return 1
-    fi
 
     localread "Enter your site username" "$tmp_user" JUSER
     if [ -z $JUSER ]; then
@@ -231,7 +225,7 @@ start-cypress () {
         check-image-build
         echo -e "${FC_BLUE}Running Cypress in headless mode${CLEAR_COLOR}"
         cypress-run
-        printf "%s\n\n" "$(bg::green "Cypress tests done - reports can be found in folder System/output/reports")"
+        printf "%s\n\n" "$(bg::green "Cypress tests done - reports can be found in folder output/reports")"
 			  continue
 			  ;;
 			restart)
@@ -385,15 +379,15 @@ cypress-run () {
   fi
 
   unset cy_browser
-	declare -a cy_browsers=("firefox" "chromium" "edge" "chrome" "electron")
+	declare -a cy_browsers=("firefox" "chrome" "electron")
 	select cy_browser in ${cy_browsers[@]} quit; do
 		case $cy_browser in
-      firefox|chromium|edge|chrome|electron)
+      firefox|chrome|electron)
 
         local tmp_cy_command_additional=${cy_command_additional:-""}
         unset cy_command_additional
         echo -e "${FC_BLUE}Enter additional command params (optional)${CLEAR_COLOR}"
-        echo -e " > e.g. --spec 'System/integration/administrator/components/com_content/*'\n"
+        echo -e " > e.g. --spec 'cypress/e2e/administrator/components/com_content/*'\n"
 
         localread "=> Command (optional)" "${tmp_cy_command_additional}" cy_command_additional
 
@@ -435,7 +429,7 @@ check-image-build () {
   fi
 
   if [ -z ${is_build:-""} ]; then
-    echo -e "${FC_BLUE}No image for cypress found - building one for you${CLEAR_COLOR}"
+    echo -e "${FC_BLUE}No docker image for cypress found - building one for you${CLEAR_COLOR}"
     
     confirm-build-image
 
@@ -448,7 +442,7 @@ check-image-build () {
   fi
 
   if [ -z ${is_build_web:-""} ]; then
-    echo -e "${FC_BLUE}No image for local webserver found - building one for you${CLEAR_COLOR}"
+    echo -e "${FC_BLUE}No docker image for local webserver found - building one for you${CLEAR_COLOR}"
 
     confirm-build-image
 

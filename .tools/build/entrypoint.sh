@@ -36,25 +36,25 @@ fi
 JOOMLA_LOCAL=${JOOMLA_LOCAL:-}
 
 copyConfig() {
-  cp -f $TOOLS_ROOT/config/cypress.config.dist.js $WORKDIR/tests/cypress.config.js
+  cp -f $TOOLS_ROOT/config/cypress.config.dist.mjs $WORKDIR/tests/cypress.config.mjs
 }
 
 # Setup configuration file
 # Backup the original file if a backup file not already exists and .env variable is not set to false/no/0
 # Copy the configuration file to the working directory if .env variable is set to true/yes
 
-if [ -f $WORKDIR/tests/cypress.config.js ]; then
+if [ -f $WORKDIR/tests/cypress.config.mjs ]; then
   case $JC_OVERRIDE_BACKUP in
     false|no|n|0)
       break
       ;;
     *)
-      if [ -f $WORKDIR/tests/cypress.config.js ] && [ ! -f $WORKDIR/tests/cypress.config.js.bak ] ; then
-        cp -f $WORKDIR/tests/cypress.config.js $WORKDIR/tests/cypress.config.js.bak
+      if [ -f $WORKDIR/tests/cypress.config.mjs ] && [ ! -f $WORKDIR/tests/cypress.config.mjs.bak ] ; then
+        cp -f $WORKDIR/tests/cypress.config.mjs $WORKDIR/tests/cypress.config.mjs.bak
       fi
       ;;
   esac
-  case $JC_OVERRIDE in
+  case $JC_OVERRIDE_CONFIG in
     false|no|n|0)
       break
       ;;
@@ -67,7 +67,7 @@ else
 fi
 
 # Set the correct permissions
-chown node:node $WORKDIR/tests/cypress.config.js
+chown node:node $WORKDIR/tests/cypress.config.mjs
 
 case $JOOMLA_LOCAL in
   false|no|n|0)
@@ -78,7 +78,8 @@ case $JOOMLA_LOCAL in
     JOOMLA_PASSWORD=${JOOMLA_PASSWORD:-}
     JOOMLA_API_TOKEN=${JOOMLA_API_TOKEN:-}
     JOOMLA_SITE=${JOOMLA_SITE:-}
-    JOOMLA_PROJECT=${JOOMLA_PROJECT:-cms}
+    # Set the the variable for the test project
+    TEST_PROJECT=${JOOMLA_PROJECT:-cms}
 
 
     # Update Cypress configuration file with the provided values
@@ -90,19 +91,23 @@ case $JOOMLA_LOCAL in
         -e "s/{JOOMLA_USERNAME}/$JOOMLA_USERNAME/g" \
         -e "s/{JOOMLA_PASSWORD}/$JOOMLA_PASSWORD/g" \
         -e "s/{JOOMLA_TOKEN}/${JOOMLA_API_TOKEN}/g" \
-        $WORKDIR/tests/cypress.config.js > $TMP && cp $TMP $WORKDIR/tests/cypress.config.js
+        -e "s/{TEST_PROJECT}/${TEST_PROJECT}/g" \
+        $WORKDIR/tests/cypress.config.mjs > $TMP && cp $TMP $WORKDIR/tests/cypress.config.mjs
 
-    echo "Username and password updated in cypress.config.js"
+    echo "Username and password updated in cypress.config.mjs"
 
     echo "Configuration updated successfully!"
     ;;
 
   *)
-    # Setup the configuration file for local testing    
+    # Setup the configuration file for local testing
     JOOMLA_USERNAME=${JOOMLA_USERNAME:-"admin"}
     JOOMLA_PASSWORD=${JOOMLA_PASSWORD:-"admin12345678"}
     CYPRESS_BASE_URL="http://web.local/$JOOMLA_SITE"
     CYPRESS_BASE_URL_ESCAPED=$(printf '%s\n' "$CYPRESS_BASE_URL" | sed -e 's/[\/&]/\\&/g')
+
+    # Set the the variable for the test project
+    TEST_PROJECT=${JOOMLA_PROJECT:-cms}
 
     # Read database credentials from configuration.php
     SITE_ROOT="/usr/src/Projects/data/sites/$JOOMLA_SITE"
@@ -138,18 +143,20 @@ case $JOOMLA_LOCAL in
         -e "s/{BASE_URL}/$CYPRESS_BASE_URL_ESCAPED/g" \
         -e "s/{JOOMLA_USERNAME}/$JOOMLA_USERNAME/g" \
         -e "s/{JOOMLA_PASSWORD}/$JOOMLA_PASSWORD/g" \
+        -e "s/{TEST_PROJECT}/${TEST_PROJECT}/g" \
         -e "s/{JOOMLA_TOKEN}/${!API_LABEL}/g" \
-        $WORKDIR/tests/cypress.config.js > $TMP && cp $TMP $WORKDIR/tests/cypress.config.js
+        $WORKDIR/tests/cypress.config.mjs > $TMP && cp $TMP $WORKDIR/tests/cypress.config.mjs
 
     # Symlink test data into the site
-    if [ ! -d $SITE_ROOT/tests/data ]; then
+    // ??? Should be checked
+    if [ ! -d $SITE_ROOT/tests/data ]; then 
       if [ ! -d $SITE_ROOT/tests ]; then
-        mkdir -p $SITE_ROOT/tests/System
+        mkdir -p $SITE_ROOT/tests/cypress
       fi
-      if [ -L $SITE_ROOT/tests/System/data ] ; then
-        unlink $SITE_ROOT/tests/System/data
+      if [ -L $SITE_ROOT/tests/cypress/data ] ; then
+        unlink $SITE_ROOT/tests/cypress/data
       fi
-      ln -s $WORKDIR/tests/System/data $SITE_ROOT/tests/System/data
+      ln -s $WORKDIR/tests/cypress/data $SITE_ROOT/tests/cypress/data
     fi
 
     ;;

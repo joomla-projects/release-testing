@@ -8,7 +8,7 @@
 
 set e+x
 
-LOCAL_NAME=joomla-cypress-included:13.14.2
+LOCAL_NAME=joomla-cypress-included:13.14.2v2
 BUILD_PATH=${BUILD:-.}
 
 echo "Building $LOCAL_NAME"
