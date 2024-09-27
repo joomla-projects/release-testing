@@ -48,10 +48,10 @@ export default defineConfig({
 		charts: true,
 		reportPageTitle: 'Joomla-Tests - {TEST_PROJECT}',
 		timestamp: 'yyyy-mm-dd_HH-MM',
-		embeddedScreenshots: true,
-		// inlineAssets: true,
+		// embeddedScreenshots: true,
+		inlineAssets: true,
 		saveAllAttempts: false,
-		reportDir: './output/reports/{TEST_PROJECT}',
+		reportDir: '../output/reports/{TEST_PROJECT}',
 		overwrite: false,
 	}
 });

@@ -217,7 +217,8 @@ start-cypress () {
 	cypress-start
 
 	unset cy_options
-	declare -a cy_options=("headless" "restart" "restart-debug" "stop")
+	# declare -a cy_options=("headless" "restart" "restart-debug" "reopen-cypress" "stop")
+  declare -a cy_options=("headless" "restart" "restart-debug" "stop")
 	select cy_option in ${cy_options[@]}; do
 		case $cy_option in
 			headless)
@@ -238,6 +239,9 @@ start-cypress () {
         check-image-build
 			  cypress-debug
 			  ;;
+      reopen-cypress)
+        # cypress-open
+        ;;
 			stop)
 			  cypress-stop
 			  break
@@ -404,6 +408,18 @@ cypress-run () {
   		esac
 	done
 }
+
+# Function to open Cypress interactive with or without debug mode enabled
+# cypress-open () {
+  # CONTAINER="cypress"
+  # COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
+
+  # if [ $CYPRESS_OPTION == "remote" ]; then
+    # COMPOSEFILES="$REAL_TOOLS/docker-compose.yml"
+  # fi
+
+  # run-command-container "cd /e2e/tests && cypress open --project '/e2e/tests' " true
+# }
 
 # Function to check if the Docker image for Cypress is built and build it if necessary.
 check-image-build () {

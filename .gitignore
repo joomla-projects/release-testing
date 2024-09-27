@@ -7,5 +7,8 @@ data/sites/*
 # important: do not remove the obove line
 .tools/tmp/*
 !.tools/tmp/.gitkeep
-**/tests/System/output/*
+**/output
+**/import
 **/tests/cypress/downloads/**
+**/tests/cypress.config.mjs
+**/tests/cypress.config.mjs.bak

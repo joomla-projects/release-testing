@@ -78,9 +78,6 @@ case $JOOMLA_LOCAL in
     JOOMLA_PASSWORD=${JOOMLA_PASSWORD:-}
     JOOMLA_API_TOKEN=${JOOMLA_API_TOKEN:-}
     JOOMLA_SITE=${JOOMLA_SITE:-}
-    # Set the the variable for the test project
-    TEST_PROJECT=${JOOMLA_PROJECT:-cms}
-
 
     # Update Cypress configuration file with the provided values
     CYPRESS_BASE_URL_ESCAPED=$(printf '%s\n' "$CYPRESS_BASE_URL" | sed -e 's/[\/&]/\\&/g')
@@ -105,9 +102,6 @@ case $JOOMLA_LOCAL in
     JOOMLA_PASSWORD=${JOOMLA_PASSWORD:-"admin12345678"}
     CYPRESS_BASE_URL="http://web.local/$JOOMLA_SITE"
     CYPRESS_BASE_URL_ESCAPED=$(printf '%s\n' "$CYPRESS_BASE_URL" | sed -e 's/[\/&]/\\&/g')
-
-    # Set the the variable for the test project
-    TEST_PROJECT=${JOOMLA_PROJECT:-cms}
 
     # Read database credentials from configuration.php
     SITE_ROOT="/usr/src/Projects/data/sites/$JOOMLA_SITE"
