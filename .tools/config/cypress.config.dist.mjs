@@ -28,8 +28,8 @@ export default defineConfig({
 	},
 	env: {
 		sitename: '{SITENAME}',
-		name: 'Admin',
-		email: 'admin@example.local',
+		name: 'Cy-Admin',
+		email: 'cy-admin@example.local',
 		username: '{JOOMLA_USERNAME}',
 		password: '{JOOMLA_PASSWORD}',
 		api_token: '{JOOMLA_TOKEN}',

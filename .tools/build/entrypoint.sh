@@ -98,7 +98,7 @@ case $JOOMLA_LOCAL in
 
   *)
     # Setup the configuration file for local testing
-    JOOMLA_USERNAME=${JOOMLA_USERNAME:-"admin"}
+    JOOMLA_USERNAME=${JOOMLA_USERNAME:-"cy-admin"}
     JOOMLA_PASSWORD=${JOOMLA_PASSWORD:-"admin12345678"}
     CYPRESS_BASE_URL="http://web.local/$JOOMLA_SITE"
     CYPRESS_BASE_URL_ESCAPED=$(printf '%s\n' "$CYPRESS_BASE_URL" | sed -e 's/[\/&]/\\&/g')
@@ -142,7 +142,7 @@ case $JOOMLA_LOCAL in
         $WORKDIR/tests/cypress.config.mjs > $TMP && cp $TMP $WORKDIR/tests/cypress.config.mjs
 
     # Symlink test data into the site
-    // ??? Should be checked
+    #??? Should be checked
     if [ ! -d $SITE_ROOT/tests/data ]; then 
       if [ ! -d $SITE_ROOT/tests ]; then
         mkdir -p $SITE_ROOT/tests/cypress

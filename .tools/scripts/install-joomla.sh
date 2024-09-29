@@ -19,6 +19,7 @@ smtpHost=$4
 dbHost='mysql'
 dbDriver='mysqli'
 secret=$(openssl rand -hex 8)
+db_prefix='j__'
 
 # Change the working directory
 cd $root
@@ -68,6 +69,7 @@ cp $(dirname $(dirname $0))/config/configuration.php $root/configuration.php
 sed -e "s/{SITE}/$site/g" \
     -e "s/{DBHOST}/$dbHost/g" \
     -e "s/{DBNAME}/$dbName/g" \
+	-e "s/{DBPREFIX}/$db_prefix/g" \
     -e "s/{SMTPHOST}/$smtpHost/g" \
     -e "s/{PATH}/${root//\//\\/}/g" \
     -e "s/{SECRET}/$secret/g" \
@@ -126,9 +128,9 @@ cp -r $root/installation $root/_installation
 
 echo -e " > Installing Joomla via CLI"
 
-php $root/installation/joomla.php install --site-name "${site}" --admin-user admin --admin-password 'admin12345678' --admin-username Admin --admin-email admin@example.local --db-type $dbDriver --db-host $dbHost --db-user root --db-pass root --db-name $dbName --db-prefix j_ --no-interaction -vvv
+php $root/installation/joomla.php install --site-name "${site}" --admin-user cy-admin --admin-password 'admin12345678' --admin-username Cy-Admin --admin-email cy-admin@example.local --db-type $dbDriver --db-host $dbHost --db-user root --db-pass root --db-name $dbName --db-prefix j_ --no-interaction -vvv
 
-userId=$(mysql -u root -proot -h $dbHost -D $dbName -se "SELECT id FROM j_users where username='admin'")
+userId=$(mysql -u root -proot -h $dbHost -D $dbName -se "SELECT id FROM j_users where username='cy-admin'")
 
 # Generate API tokenSeed and Bearer token
 tokenSeed=$(openssl rand -base64 16)

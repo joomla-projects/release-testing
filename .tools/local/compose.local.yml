@@ -4,5 +4,5 @@ services:
       CYPRESS_BASE_URL: "http://web.local/${JOOMLA_SITE}"
       JOOMLA_LOCAL: "yes"
       JOOMLA_SITE: "${JOOMLA_SITE}"
-      JOOMLA_USERNAME: "${JOOMLA_USERNAME:-admin}"
+      JOOMLA_USERNAME: "${JOOMLA_USERNAME:-cy-admin}"
       JOOMLA_PASSWORD: "${JOOMLA_PASSWORD:-admin12345678}"
