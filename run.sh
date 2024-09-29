@@ -10,6 +10,12 @@
 REAL_ROOT=$(realpath $(dirname $0))
 REAL_TOOLS=$(realpath $REAL_ROOT/.tools)
 
+# Temporary file that is deleted when the script is terminated
+TMP=${REAL_TOOLS}/tmp/$(basename $0).$$
+trap 'rm -rf $TMP' 0
+
+echo -e " > Adding temp file ${TMP}"
+
 BUILD=$REAL_TOOLS/build
 
 # Load environment variables from .env file
@@ -900,6 +906,7 @@ remove-site () {
                 #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
                 #       sed: couldn't open temporary file: Permission denied
                 sed "\:$API_LINE:d" $REAL_ROOT/.tools/.secret >$TMP 2>/dev/null && cp $TMP $REAL_ROOT/.tools/.secret
+                rm -f $TMP
               fi
             fi
 

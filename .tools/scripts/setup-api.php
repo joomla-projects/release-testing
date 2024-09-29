@@ -21,6 +21,12 @@ $bearer   = base64_encode("$algorithm:$userId:$tokenHash");
 
 $label = "API_" . strtoupper(preg_replace('/^' . preg_quote('Joomla-', '/') . '/', '', $site));
 
+if (!file_exists('/usr/src/Projects/.tools/.secret')) {
+    file_put_contents('/usr/src/Projects/.tools/.secret', 
+        '# API Bearer Token for the local Joomla pages' . PHP_EOL . '# Should be kept in .gitignore - please be careful' . PHP_EOL . '' . PHP_EOL,
+        FILE_APPEND | LOCK_EX);
+}
+
 if (file_put_contents('/usr/src/Projects/.tools/.secret', $label . '=' . $bearer . PHP_EOL , FILE_APPEND | LOCK_EX)) {
     echo ' > API Token for ' . $site . ' has been set.' . PHP_EOL . PHP_EOL;
 } else {
