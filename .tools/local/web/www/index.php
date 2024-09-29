@@ -25,7 +25,7 @@
 <p>Here is the list of available sites:</p>
 <ul>
 	<p><a href="//<?php echo $_SERVER['SERVER_NAME']; ?>:81">PHPMyAdmin installation</a></p>
-	<p><a href="//<?php echo $_SERVER['SERVER_NAME']; ?>:83">Mailcatcher installation</a></p>
+	<!-- <p><a href="//<?php // echo $_SERVER['SERVER_NAME']; ?>:83">Mailcatcher installation</a></p> -->
 	<p><a href="//<?php echo $_SERVER['SERVER_NAME']; ?>:5800/vnc.html?autoconnect=true">Cypress installation</a></p>
 	<!-- TODO: List Sites dyanmically -->
 </ul>

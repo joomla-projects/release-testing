@@ -1,25 +1,22 @@
-const { defineConfig } = require('cypress');
-const setupPlugins = require('./System/plugins/index');
+import { defineConfig } from 'cypress';
+import setupPlugins from './cypress/plugins/index.mjs';
 
-module.exports = defineConfig({
-	fixturesFolder: 'System/fixtures',
-	videosFolder: 'System/output/videos',
-	screenshotsFolder: 'System/output/screenshots',
+export default defineConfig({
+	fixturesFolder: 'cypress/fixtures',
+	videosFolder: '../output/videos/{TEST_PROJECT}',
+	screenshotsFolder: '../output/screenshots/{TEST_PROJECT}',
 	viewportHeight: 1000,
 	viewportWidth: 1200,
 	e2e: {
 		setupNodeEvents(on, config) {
 			setupPlugins(on, config);
+			return config
 		},
 		specPattern: [
-			// 'System/integration/install/**/*.cy.{js,jsx,ts,tsx}',
-			'System/integration/administrator/**/*.cy.{js,jsx,ts,tsx}',
-			// 'System/integration/site/**/*.cy.{js,jsx,ts,tsx}',
-			// 'System/integration/api/**/*.cy.{js,jsx,ts,tsx}',
-			'System/integration/plugins/**/*.cy.{js,jsx,ts,tsx}',
+			'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
 		],
 		baseUrl: "{BASE_URL}",
-		supportFile: 'System/support/index.js',
+		supportFile: 'cypress/support/index.js',
 		scrollBehavior: 'center',
 		browser: 'firefox',
 		screenshotOnRunFailure: true,
@@ -31,8 +28,8 @@ module.exports = defineConfig({
 	},
 	env: {
 		sitename: '{SITENAME}',
-		name: 'Admin',
-		email: 'admin@example.local',
+		name: 'Cy-Admin',
+		email: 'cy-admin@example.local',
 		username: '{JOOMLA_USERNAME}',
 		password: '{JOOMLA_PASSWORD}',
 		api_token: '{JOOMLA_TOKEN}',
@@ -49,12 +46,12 @@ module.exports = defineConfig({
 	reporter: 'cypress-mochawesome-reporter',
 	reporterOptions: {
 		charts: true,
-		reportPageTitle: 'Joomla-Tests',
+		reportPageTitle: 'Joomla-Tests - {TEST_PROJECT}',
 		timestamp: 'yyyy-mm-dd_HH-MM',
-		embeddedScreenshots: true,
+		// embeddedScreenshots: true,
 		inlineAssets: true,
 		saveAllAttempts: false,
-		reportDir: 'System/output/reports',
+		reportDir: '../output/reports/{TEST_PROJECT}',
 		overwrite: false,
 	}
 });

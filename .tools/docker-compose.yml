@@ -1,7 +1,7 @@
 services:
 
   cypress:
-    image: joomla-cypress-included:13.14.2
+    image: joomla-cypress-included:13.14.2v2
     container_name: joomla_cypress
     restart: 'on-failure'
     environment:
@@ -14,6 +14,7 @@ services:
       JOOMLA_USERNAME: "${JOOMLA_USERNAME}"
       JOOMLA_PASSWORD: "${JOOMLA_PASSWORD}"
       JOOMLA_API_TOKEN: "${JOOMLA_API_TOKEN}"
+      TEST_PROJECT: "${JOOMLA_PROJECT}"
       JOOMLA_LOCAL: "no"
     volumes:
       - ../:/usr/src/Projects

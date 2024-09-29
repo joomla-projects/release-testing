@@ -17,7 +17,7 @@ class JConfig {
 	public $user = 'root';
 	public $password = 'root';
 	public $db = '{DBNAME}';
-	public $dbprefix = 'j_';
+	public $dbprefix = '{DBPREFIX}';
 	public $dbencryption = '0';
 	public $dbsslverifyservercert = '';
 	public $dbsslkey = '';
@@ -38,7 +38,7 @@ class JConfig {
 	public $offset = 'UTC';
 	public $mailonline = '1';
 	public $mailer = 'smtp';
-	public $mailfrom = 'admin@example.local';
+	public $mailfrom = 'cy-admin@example.local';
 	public $fromname = '{SITE}';
 	public $sendmail = '/usr/sbin/sendmail';
 	public $smtpauth = '0';

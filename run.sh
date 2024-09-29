@@ -95,34 +95,28 @@ start-cypress () {
 
     localread "Enter your site url (with http(s)://)" "$tmp_domain" JDOMAIN
     if [ -z $JDOMAIN ]; then
-      echo -e "${FC_RED}No site url defined for testing with cypress${CLEAR_COLOR}"
+      printf "%s\n\n" "$(bg::red "No site url defined for testing with cypress")"
       return 1
     fi
 
-    wg_result=$(wget --max-redirect=0 --spider -S $JDOMAIN 2>&1 | grep "HTTP/" | awk '{print $2}')
-
-    if [ -z $wg_result ] || [ $wg_result -lt 200 ] || [ $wg_result -ge 400 ] ; then
-      echo -e "${FC_RED}Is your site up? Can't reach ${FC_BOLDU_INLINE}$JDOMAIN${CLEAR_COLOR_INLINE}${FC_RED_INLINE} for testing with cypress${CLEAR_COLOR}"
-      return 1
-    fi
 
     localread "Enter your site username" "$tmp_user" JUSER
     if [ -z $JUSER ]; then
-      echo -e "${FC_RED}No ${FC_BOLDU_INLINE}USER${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined for testing with cypress${CLEAR_COLOR}"
+      printf "%s\n\n" "$(bg::red "No USER defined for testing with cypress")"
       return 1
     fi
 
     # Prompt user for password (-s for privacy)
     localread "Enter your site password" "" JPASSWORD s
     if [ -z $JPASSWORD ]; then
-      echo -e "${FC_RED}No ${FC_BOLDU_INLINE}PASSWORD${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined for testing with cypress${CLEAR_COLOR}"
+      printf "%s\n\n" "$(bg::red "No PASSWORD defined for testing with cypress")"
       return 1
     fi
 
     # Prompt user for API-TOKEN (-s for privacy)
     localread "Enter your site API-TOKEN" "" JAPITOKEN s
     if [ -z $JAPITOKEN ]; then
-      echo -e "${FC_RED}No ${FC_BOLDU_INLINE}API-Token${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined for testing with cypress${CLEAR_COLOR}"
+      printf "%s\n\n" "$(bg::red "No API-Token defined for testing with cypress")"
       return 1
     fi
 
@@ -135,9 +129,9 @@ start-cypress () {
 
     localread "Enter your project" "$tmp_project" PROJECT
     if [ -z $PROJECT ] || [ ! -d $REAL_ROOT/$PROJECT ]; then
-      echo -e "${FC_RED}No ${FC_BOLDU_INLINE}project${CLEAR_COLOR_INLINE}${FC_RED} defined for testing with cypress${CLEAR_COLOR}"
-      echo -e " > Please create a project ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}$ and try again\n"
-      echo -e " > ${REAL_ROOT}/${PROJECT} - missing\n\n"
+      printf "%s\n\n" "$(bg::red "No project defined for testing with cypress")"
+      echo -e " > Please create a project ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE} and try again\n"
+      echo -e " > ${REAL_ROOT}/${PROJECT} - ${FC_RED_INLINE}missing${CLEAR_COLOR}"
       return 1
     fi
 
@@ -163,9 +157,9 @@ start-cypress () {
 
     localread "Enter your project" "$tmp_project" PROJECT
     if [ -z $PROJECT ] || [ ! -d $REAL_ROOT/$PROJECT ]; then
-      echo -e "${FC_RED}No ${FC_BOLDU_INLINE}project${CLEAR_COLOR_INLINE}${FC_RED} defined for testing with cypress${CLEAR_COLOR}"
-      echo -e " > Please create a project ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}$ and try again\n"
-      echo -e " > ${REAL_ROOT}/${PROJECT} - missing\n\n"
+      printf "%s\n\n" "$(bg::red "No project defined for testing with cypress")"
+      echo -e " > Please create a project ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE} and try again\n"
+      echo -e " > ${REAL_ROOT}/${PROJECT} - ${FC_RED_INLINE}missing${CLEAR_COLOR}"
       return 1
     fi
 
@@ -177,82 +171,97 @@ start-cypress () {
 
     IFS=$'\n' arrSites=($(sort <<<"${array[*]}")); unset IFS
 
+    while true; do
     echo -e "${FC_BLUE}Select a local site:${CLEAR_COLOR}"
-
     echo -e " > To create a new site please make sure to have a installable ${FC_BOLDU_INLINE}Joomla full package (zip)${CLEAR_COLOR_INLINE} in your ${FC_BOLDU_INLINE}/data/install${CLEAR_COLOR_INLINE} folder.\n"
-
     unset SITE
-
-    select SITE in INSTALL-NEW ${arrSites[@]} quit; do
-      case $SITE in
-        quit)
-          return 1
-          ;;
-        INSTALL-NEW)
-          unset SITE
-          setup-site
-          if [ $? -eq 1 ]; then
-            echo -e "${FC_RED}Site ${FC_BOLDU_INLINE}${SITE:-empty}${CLEAR_COLOR_INLINE}${FC_RED_INLINE} could not be created${CLEAR_COLOR}"
-            continue
-          fi
-          break
-          ;;
-        *)
-          if [ -z $SITE ] || ! [[ ${arrSites[@]} =~ "$SITE" ]];then
-            echo -e "${FC_RED}No available site selected${CLEAR_COLOR}"
-            continue
-          fi
-          if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
-            echo -e "${FC_RED}Site does not exist data/sites/${SITE}${CLEAR_COLOR}"
-            continue
-          fi
-          if [ ! -f $REAL_ROOT/data/sites/$SITE/configuration.php ]; then
-            echo -e "${FC_RED}No Configuration File found for your Joomla site ${SITE}${CLEAR_COLOR}"
-            echo -e " > data/sites/${SITE}/configuration.php - missing\n"
-            echo -e " > Please install site ${SITE} first and try again\n\n"
-            continue
-          fi
-          break
-          ;;
-      esac
-
+      select SITE in INSTALL-NEW RESTORE-BACKUP ${arrSites[@]} quit; do
+        case $SITE in
+          quit)
+            return 1
+            ;;
+          INSTALL-NEW)
+            unset SITE
+            setup-site
+            if [ $? -eq 1 ]; then
+              echo -e "${FC_RED}Site ${FC_BOLDU_INLINE}${SITE:-empty}${CLEAR_COLOR_INLINE}${FC_RED_INLINE} could not be created.${CLEAR_COLOR}"
+              break
+            fi
+            break 2
+            ;;
+          RESTORE-BACKUP)
+            unset SITE
+            restore-site
+            if [ $? -eq 1 ]; then
+              echo -e "${FC_RED}Site ${FC_BOLDU_INLINE}${SITE:-empty}${CLEAR_COLOR_INLINE}${FC_RED_INLINE} could not be restored from backup.${CLEAR_COLOR}"
+              break
+            fi
+            break 2
+            ;;
+          *)
+            if [ -z $SITE ] || ! [[ ${arrSites[@]} =~ "$SITE" ]];then
+              echo -e "${FC_RED}No available site selected${CLEAR_COLOR}"
+              break
+            fi
+            if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
+              echo -e "${FC_RED}Site does not exist data/sites/${SITE}${CLEAR_COLOR}"
+              break
+            fi
+            if [ ! -f $REAL_ROOT/data/sites/$SITE/configuration.php ]; then
+              printf "%s\n\n" "$(bg::red "No Configuration File found for your Joomla site ${SITE}")"
+              echo -e " > Please install site ${SITE} first and try again\n"
+              echo -e " > ${FC_RED}data/sites/${SITE}/configuration.php - ${FC_RED_INLINE}missing${CLEAR_COLOR}"              
+              break
+            fi
+            break 2
+            ;;
+        esac
+      done
     done
     
   fi
 
 	cypress-start
 
-	unset cy_options
-	declare -a cy_options=("headless" "restart" "restart-debug" "stop")
-	select cy_option in ${cy_options[@]}; do
-		case $cy_option in
-			headless)
-        # cypress-stop
-        check-image-build
-        echo -e "${FC_BLUE}Running Cypress in headless mode${CLEAR_COLOR}"
-        cypress-run
-        printf "%s\n\n" "$(bg::green "Cypress tests done - reports can be found in folder System/output/reports")"
-			  continue
-			  ;;
-			restart)
-			  cypress-stop
-        check-image-build
-			  cypress-start
-			  ;;
-			restart-debug)
-			  cypress-stop
-        check-image-build
-			  cypress-debug
-			  ;;
-			stop)
-			  cypress-stop
-			  break
-			  ;;
-			*) 
-	  		  echo "Invalid option $REPLY"
-	  		  ;;
-  		esac
-	done
+  while true; do
+    unset cy_options
+    # declare -a cy_options=("headless" "restart" "restart-debug" "reopen-cypress" "stop")
+    declare -a cy_options=("headless" "restart" "restart-debug" "stop")
+    select cy_option in ${cy_options[@]}; do
+      case $cy_option in
+        headless)
+          # cypress-stop
+          check-image-build
+          echo -e "${FC_BLUE}Running Cypress in headless mode${CLEAR_COLOR}"
+          cypress-run
+          printf "%s\n\n" "$(bg::green "Cypress tests done - reports can be found in folder output/reports")"
+          break
+          ;;
+        restart)
+          cypress-stop
+          check-image-build
+          cypress-start
+          ;;
+        restart-debug)
+          cypress-stop
+          check-image-build
+          cypress-debug
+          ;;
+        reopen-cypress)
+          # cypress-open
+          # break
+          ;;
+        stop)
+          cypress-stop
+          break 2
+          ;;
+        *) 
+          echo -e "\n${FC_RED}Invalid option $REPLY${CLEAR_COLOR}"
+          break
+          ;;
+        esac
+    done
+  done
 
 }
 
@@ -383,33 +392,48 @@ cypress-run () {
   if [ $CYPRESS_OPTION == "remote" ]; then
     COMPOSEFILES="$REAL_TOOLS/docker-compose.yml"
   fi
+  
+  while true; do
+    unset cy_browser
+	  declare -a cy_browsers=("firefox" "chrome" "electron")
+    select cy_browser in ${cy_browsers[@]} quit; do
+      case $cy_browser in
+        firefox|chrome|electron)
 
-  unset cy_browser
-	declare -a cy_browsers=("firefox" "chromium" "edge" "chrome" "electron")
-	select cy_browser in ${cy_browsers[@]} quit; do
-		case $cy_browser in
-      firefox|chromium|edge|chrome|electron)
+          local tmp_cy_command_additional=${cy_command_additional:-""}
+          unset cy_command_additional
+          echo -e "${FC_BLUE}Enter additional command params (optional)${CLEAR_COLOR}"
+          echo -e " > e.g. --spec 'cypress/e2e/administrator/components/com_content/*'\n"
 
-        local tmp_cy_command_additional=${cy_command_additional:-""}
-        unset cy_command_additional
-        echo -e "${FC_BLUE}Enter additional command params (optional)${CLEAR_COLOR}"
-        echo -e " > e.g. --spec 'System/integration/administrator/components/com_content/*'\n"
+          localread "=> Command (optional)" "${tmp_cy_command_additional}" cy_command_additional
 
-        localread "=> Command (optional)" "${tmp_cy_command_additional}" cy_command_additional
-
-        run-command-container "cd /e2e/tests && cypress run --browser ${cy_browser} ${cy_command_additional}" true
-        break
-        ;;
-			quit)
-			  cypress-stop
-			  break
-			  ;;
-			*) 
-        echo "Invalid option $REPLY"
-        ;;
-  		esac
+          run-command-container "cd /e2e/tests && cypress run --browser ${cy_browser} ${cy_command_additional}" true
+          break 2
+          ;;
+        quit)
+          cypress-stop
+          break 2
+          ;;
+        *) 
+          echo -e "\n${FC_RED}Invalid option $REPLY${CLEAR_COLOR}"
+          break
+          ;;
+        esac
+    done
 	done
 }
+
+# Function to open Cypress interactive with or without debug mode enabled
+# cypress-open () {
+  # CONTAINER="cypress"
+  # COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
+
+  # if [ $CYPRESS_OPTION == "remote" ]; then
+    # COMPOSEFILES="$REAL_TOOLS/docker-compose.yml"
+  # fi
+
+  # run-command-container "cd /e2e/tests && cypress open --project '/e2e/tests' " true
+# }
 
 # Function to check if the Docker image for Cypress is built and build it if necessary.
 check-image-build () {
@@ -435,7 +459,7 @@ check-image-build () {
   fi
 
   if [ -z ${is_build:-""} ]; then
-    echo -e "${FC_BLUE}No image for cypress found - building one for you${CLEAR_COLOR}"
+    echo -e "${FC_BLUE}No docker image for cypress found - building one for you${CLEAR_COLOR}"
     
     confirm-build-image
 
@@ -448,7 +472,7 @@ check-image-build () {
   fi
 
   if [ -z ${is_build_web:-""} ]; then
-    echo -e "${FC_BLUE}No image for local webserver found - building one for you${CLEAR_COLOR}"
+    echo -e "${FC_BLUE}No docker image for local webserver found - building one for you${CLEAR_COLOR}"
 
     confirm-build-image
 
@@ -463,7 +487,7 @@ check-image-build () {
 
 confirm-build-image () {
   unset USERCONFIRMBUILD
-  read -rp "Confirm (y/N): " USERCONFIRMBUILD
+  localread "Confirm (y/N): " "y" USERCONFIRMBUILD
   if [[ $USERCONFIRMBUILD = "y" || $USERCONFIRMBUILD = "Y" ]]; then
     return 0
   else
@@ -487,9 +511,19 @@ check-containers-running() {
   return 0
 }
 
+check-local-containers-running() {
+  check-image-build
+  CONTAINER="web.local"
+  check-containers-running
+  CONTAINER="mysql"
+  check-containers-running
+  CONTAINER="phpmyadmin"
+  check-containers-running
+}
+
 # Function to export repeatedly used variables
 export-variables() {
-  export JOOMLA_USERNAME=${JUSER:-"admin"} JOOMLA_PASSWORD=${JPASSWORD:-"admin12345678"} DOMAIN=${JDOMAIN:-"http:web.local/${SITE:-"test"}"} \
+  export JOOMLA_USERNAME=${JUSER:-"cy-admin"} JOOMLA_PASSWORD=${JPASSWORD:-"admin12345678"} DOMAIN=${JDOMAIN:-"http:web.local/${SITE:-"test"}"} \
          JOOMLA_PROJECT=${PROJECT:-"cms"} JOOMLA_SITE=${SITE:-"test"} ROOT=$REAL_ROOT WEB_LOCAL_PORT=${WEB_LOCAL_PORT:-"8080"} \
          WEB_LOCAL_PORT_SSL=${WEB_LOCAL_PORT_SSL:-"4433"} JOOMLA_API_TOKEN=${JAPITOKEN:-}
 }
@@ -518,13 +552,7 @@ run-command-container() {
 # Returns 0 on success, 1 on failure.
 setup-site () {
 
-  check-image-build
-  CONTAINER="web.local"
-  check-containers-running
-  CONTAINER="mysql"
-  check-containers-running
-  CONTAINER="phpmyadmin"
-  check-containers-running
+  check-local-containers-running
 
   array=()
   for file in $REAL_ROOT/data/install/*zip; do
@@ -541,68 +569,53 @@ setup-site () {
   else
     IFS=$'\n' arrInstallZip=($(sort <<<"${array[@]}")); unset IFS  
 
-    printf "%s\n\n" "$(bg::blue "Select a zip file for the installation:")"
-
-    select VERSION in ${arrInstallZip[@]} quit; do
-      case $VERSION in
-        quit)
-          return 1
-          ;;
-        *)
-          if [ -z $VERSION ] || ! [[ ${arrInstallZip[@]} =~ "$VERSION" ]];then
-            echo -e "${FC_YELLOW}No package for installation selected - please choose one available.${CLEAR_COLOR}"
-            continue
-          fi
-
-          tmp_site=$SITE
-          unset SITE
-          # Prompt user for site
-          echo -e "\n"
-          localread "Enter your new site name" "$tmp_site" SITE
-          if [ -z "$SITE" ]; then
-            echo -e "${FC_RED}No ${FC_BOLDU_INLINE}Site${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined${CLEAR_COLOR}"
+    while true; do
+      printf "%s\n\n" "$(bg::blue "Select a zip file for the installation:")"
+      select VERSION in ${arrInstallZip[@]} quit; do
+        case $VERSION in
+          quit)
             return 1
-          fi
-          SITE=${SITE/' '/'_'}
-          SITE=${SITE//[^[:alnum:]]/'_'}
-          SITE=${SITE/-/_}
-          SITE=${SITE//+(_)/_}
-          SITE=${SITE/#-}
-          SITE=${SITE/%-}
-          SITE=$(echo "$SITE" | sed 's/.*/\L&/')
-          if [ -d $REAL_ROOT/data/sites/$SITE ]; then
-            echo -e "${FC_RED}Site already exists - ${FC_BOLDU_INLINE}data/sites/${SITE}${CLEAR_COLOR_INLINE}${FC_RED_INLINE}${CLEAR_COLOR}"
-            return 1
-          fi
-      
-          echo -e "${FC_BLUE}Create site ${FC_BOLDU_INLINE}${SITE}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} with ${FC_BOLD_INLINE}${VERSION}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE}?${CLEAR_COLOR}"
-          unset USERCONFIRMATION
-          localread "Confirm (y/N)" "" USERCONFIRMATION
-          if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
-            if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
-              mkdir -p $REAL_ROOT/data/sites/$SITE
-
-              echo -e "${FC_BLUE}Unzip Joomla ${FC_BOLD_INLINE}$VERSION${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} on Folder: ${FC_BOLDU_INLINE}$SITE${CLEAR_COLOR}"
-
-              CONTAINER="web.local"
-              COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
-
-              run-command-container "unzip \"/usr/src/Projects/data/install/$VERSION\" -d /usr/src/Projects/data/sites/$SITE | pv -l -s \$(unzip -Z -1 \"/usr/src/Projects/data/install/$VERSION\" | wc -l) > \/dev\/null" true
-
-              run-command-container "ln -sfn /usr/src/Projects/data/sites/$SITE /var/www/html/$SITE" true
-              
-              printf "%s\n\n" "$(bg::blue "Install Joomla $VERSION on Folder: $SITE")"
-
-              run-command-container "/usr/src/Projects/.tools/scripts/install-joomla.sh /var/www/html/$SITE sites_$SITE Joomla-$SITE mailcatcher r true"
-              
-              return 0
+            ;;
+          *)
+            if [ -z $VERSION ] || ! [[ ${arrInstallZip[@]} =~ "$VERSION" ]];then
+              echo -e "${FC_YELLOW}No package for installation selected - please choose one available.${CLEAR_COLOR}"
+              break
             fi
-          else
-            return 1
-          fi
-        ;;
-      esac
 
+            prepare-new-site
+
+            if [ $? -eq 1 ]; then
+              return 1
+            fi
+
+            echo -e "${FC_BLUE}Create site ${FC_BOLDU_INLINE}${SITE}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} with ${FC_BOLD_INLINE}${VERSION}${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE}?${CLEAR_COLOR}"
+            unset USERCONFIRMATION
+            localread "Confirm (y/N)" "" USERCONFIRMATION
+            if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
+              if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
+                mkdir -p $REAL_ROOT/data/sites/$SITE
+
+                echo -e "${FC_BLUE}Unzip Joomla ${FC_BOLD_INLINE}$VERSION${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} on Folder: ${FC_BOLDU_INLINE}$SITE${CLEAR_COLOR}"
+
+                CONTAINER="web.local"
+                COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
+
+                run-command-container "unzip \"/usr/src/Projects/data/install/$VERSION\" -d /usr/src/Projects/data/sites/$SITE | pv -l -s \$(unzip -Z -1 \"/usr/src/Projects/data/install/$VERSION\" | wc -l) > \/dev\/null" true
+
+                run-command-container "ln -sfn /usr/src/Projects/data/sites/$SITE /var/www/html/$SITE" true
+                
+                printf "%s\n\n" "$(bg::blue "Install Joomla $VERSION on Folder: $SITE")"
+
+                run-command-container "/usr/src/Projects/.tools/scripts/install-joomla.sh /var/www/html/$SITE sites_$SITE Joomla-$SITE mailcatcher r true"
+                
+                return 0
+              fi
+            else
+              return 1
+            fi
+          ;;
+        esac
+      done
     done
 
     return 0
@@ -611,6 +624,205 @@ setup-site () {
 
   return 1
 
+}
+
+restore-site () {
+  check-local-containers-running
+
+  echo -e "${FC_BLUE}Restore site with your ${FC_BLUE_INLINE}${FC_BOLD_INLINE}backup files${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE}?${CLEAR_COLOR}"
+
+  unset USERCONFIRMATION
+  localread "Confirm (y/N)" "y" USERCONFIRMATION
+  if [[ $USERCONFIRMATION != "y" && $USERCONFIRMATION != "Y" ]]; then
+    return 1
+  fi
+
+  prepare-new-site
+
+  if [ $? -eq 1 ]; then
+    return 1
+  fi
+
+  if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
+      mkdir -p $REAL_ROOT/data/sites/$SITE
+  else
+      printf "%s\n\n" "$(bg::red "Site already exists - check: data/sites/${SITE}")"
+      return 1
+  fi
+
+  # TODO - copy akeeba backup + kickstart.php to /data/sites/$SITE
+  # TODO - alternative copy zip and db_dump.sql to /data/sites/$SITE
+
+  printf "\n%s\n\n" "$(bg::blue "Let's start to restore your site locally to ${SITE}")"
+
+  echo -e " > We have tried to open the folder for you into which you can copy your backup files."
+  echo -e " > If for some reason this did not work, please copy your backup to the following folder: ${FC_BOLDU_INLINE}data/sites/${SITE}${CLEAR_COLOR_INLINE}.\n"
+
+  
+  echo -e " > To restore from a copy via direct FTP(s) download and database dump, please copy ${FC_BOLDU_INLINE}all files${CLEAR_COLOR_INLINE} into the folder and confirm."
+  echo -e " > You can also download your page files as a complete ${FC_BOLDU_INLINE}zip archive${CLEAR_COLOR_INLINE} and copy it in the folder. Please store your ${FC_BOLDU_INLINE}database dump${CLEAR_COLOR_INLINE} file next to it.\n"
+  echo -e " > To restore with an ${FC_BOLDU_INLINE}Akeeba backup (.jpa, jps)${CLEAR_COLOR_INLINE} please copy the backup file(s) and an ${FC_BOLDU_INLINE}up-to-date kickstart.php${CLEAR_COLOR_INLINE} into the folder."
+  echo -e " > We will then provide you with all the information you need to restore your Akeeba backup in the next steps.\n\n"
+  
+  open "${REAL_ROOT}/data/sites/$SITE"
+  
+  unset USERCONFIRMATION
+  localread "All prepared for restoring your site? (y/N)" "y" USERCONFIRMATION
+  if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
+
+      unset ak_backup
+      unset ak_kickstart
+      unset zip_archive
+      unset config_file
+      unset db_dump
+
+      CONTAINER="web.local"
+      COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
+
+      # Link site folder to web.local www folder
+      run-command-container "ln -sfn /usr/src/Projects/data/sites/$SITE /var/www/html/$SITE" true
+
+      # Get Akeeba backup files
+      ak_backup=($(find $REAL_ROOT/data/sites/$SITE -mindepth 1 -maxdepth 1 -type f \( -iname "*.jpa" -o -iname "*.jps" \) -exec basename {} \;));
+
+      if [[ ${ak_backup[@]} ]]; then
+        # Check if kickstart.php is present
+        ak_kickstart=($(find $REAL_ROOT/data/sites/$SITE -mindepth 1 -maxdepth 1 -type f -iname "kickstart.php" -exec basename {} \;));
+
+        echo -e "\nAkeeba backup ${FC_BOLDU_INLINE}${ak_backup[*]}${CLEAR_COLOR_INLINE} found for site ${SITE}"
+
+        if [[ ! ${ak_kickstart[@]} ]]; then
+          printf "%s\n" "$(bg::yellow "No kickstart.php found in your /data/sites/${SITE} folder.\n   For restoring your site with an Akeeba backup you will need the kickstart.php present.")"
+        fi
+
+        CONTAINER="mysql"
+
+        # Create DB to restore
+        # TODO postgresql
+        run-command-container "/usr/bin/mysql --defaults-extra-file=<(echo $'[client]\npassword='\"root\") -u root -e \"drop database if exists sites_$SITE\"" true
+        run-command-container "/usr/bin/mysql --defaults-extra-file=<(echo $'[client]\npassword='\"root\") -u root -e \"create database sites_$SITE\"" true
+
+        # Print information that is needed for Akeeba restore locally
+        echo -e "${FC_BLUE}To restore your site with Akeeba backup and kickstart.php, please follow the steps below:${CLEAR_COLOR}"
+
+        echo -e " > Open your browser and navigate to ${FC_BOLDU_INLINE}http://localhost:${WEB_LOCAL_PORT}/${SITE}/kickstart.php${CLEAR_COLOR_INLINE}\n"
+
+        echo -e " > Follow the instructions on the screen:\n"
+        echo -e " > Start >> Run the Installer >> Next - (nothing to do here)\n"
+        echo -e " > Provide the following information for ${FC_BOLDU_INLINE}Database Restoration${CLEAR_COLOR_INLINE}\n"
+        echo -e " > Database server host name: ${FC_BOLD_INLINE}mysql${CLEAR_COLOR_INLINE}"
+        echo -e " > User name: ${FC_BOLD_INLINE}root${CLEAR_COLOR_INLINE}"
+        echo -e " > Password: ${FC_BOLD_INLINE}root${CLEAR_COLOR_INLINE}"
+        echo -e " > Database name: ${FC_BOLD_INLINE}sites_${SITE}${CLEAR_COLOR_INLINE}"
+        echo -e " > Database table name prefix: ${FC_BOLD_INLINE}j_${CLEAR_COLOR_INLINE}\n"
+        echo -e " > Click on Next and change ${FC_BOLD_INLINE}.htaccess Handling${CLEAR_COLOR_INLINE} to ${FC_BOLD_INLINE}Use default${CLEAR_COLOR_INLINE}.\n"
+        echo -e " > Click on Next and finish the restoration process.\n"
+
+        echo -e "${FC_BLUE}Is your site up? Can we start the configuration for cypress?${CLEAR_COLOR}"
+
+        unset USERCONFIRMATION
+        localread "Confirm (y/N)" "" USERCONFIRMATION
+        if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
+          # Start setup cypress configuration
+          CONTAINER="web.local"
+          run-command-container "/usr/src/Projects/.tools/scripts/restore-backup.sh /var/www/html/$SITE sites_$SITE Joomla-$SITE mailcatcher r true"
+          return 0
+        else
+          echo -e "${FC_YELLOW}Please restore your site with Akeeba backup and kickstart.php first and try again.${CLEAR_COLOR}"
+          return 1
+        fi
+      else
+        # Get config_file
+        zip_archive=($(find $REAL_ROOT/data/sites/$SITE -mindepth 1 -maxdepth 1 -type f -iname "*.zip" -exec basename {} \;));
+
+        # Get config_file
+        config_file=($(find $REAL_ROOT/data/sites/$SITE -mindepth 1 -maxdepth 1 -type f -iname "configuration.php" -exec basename {} \;));
+
+        if [[ ! ${zip_archive[@]} ]] && [[ ! ${config_file[@]} ]]; then
+          printf "%s\n\n" "$(bg::red "Restoration unfortunately not possible!")"
+          echo -e " > No ${FC_BOLDU_INLINE}Akeeba backup${CLEAR_COLOR_INLINE}, ${FC_BOLDU_INLINE}zip archive${CLEAR_COLOR_INLINE} or ${FC_BOLDU_INLINE}configuration.php${CLEAR_COLOR_INLINE} found in your ${FC_BOLDU_INLINE}/data/sites/${SITE}${CLEAR_COLOR_INLINE} folder.\n"
+          echo -e " > ${FC_BOLD_INLINE}Please remove site $SITE, restart the process and provide the files from your backup${CLEAR_COLOR}"
+          return 1
+        fi
+
+        # Get db_dump file
+        db_dump=($(find $REAL_ROOT/data/sites/$SITE -mindepth 1 -maxdepth 1 -type f -iname "*.sql" -exec basename {} \;));
+
+        if [[ ! ${db_dump[@]} ]]; then
+          printf "%s\n\n" "$(bg::red "Restoration unfortunately not possible!")"
+          echo -e " > No ${FC_BOLDU_INLINE}database dump${CLEAR_COLOR_INLINE} found in your ${FC_BOLDU_INLINE}/data/sites/${SITE}${CLEAR_COLOR_INLINE} folder.\n"
+          echo -e " > ${FC_BOLD_INLINE}Please remove site $SITE, restart the process and provide the files from your backup${CLEAR_COLOR}"
+          return 1
+        fi
+
+        if [[ ${zip_archive[@]} ]]; then
+          echo -e "\n > Zip archive ${zip_archive[0]} found for site ${SITE}"
+          run-command-container "unzip \"/usr/src/Projects/data/sites/$SITE/${zip_archive[0]}\" -d /usr/src/Projects/data/sites/$SITE | pv -l -s \$(unzip -Z -1 \"/usr/src/Projects/data/sites/$SITE/${zip_archive[0]}\" | wc -l) > \/dev\/null" true
+          rm -rf $REAL_ROOT/data/sites/$SITE/${zip_archive[0]}
+          # Get config_file
+          config_file=($(find $REAL_ROOT/data/sites/$SITE -mindepth 1 -maxdepth 1 -type f -iname "configuration.php" -exec basename {} \;));
+          if [[ ! ${config_file[@]} ]]; then
+            printf "%s\n\n" "$(bg::red "Restoration unfortunately not possible!")"
+            echo -e " > No ${FC_BOLDU_INLINE}configuration.php${CLEAR_COLOR_INLINE} file found after extraction of your zip archive for ${SITE}.${CLEAR_COLOR}"
+            echo -e " > ${FC_BOLD_INLINE}Please remove site $SITE, check the files from your backup and restart the process${CLEAR_COLOR}"
+            return 1
+          fi
+        fi
+
+        if [[ ${config_file[@]} ]]; then
+          echo -e "\n > Configuration file ${FC_BOLDU_INLINE}${config_file[0]}${CLEAR_COLOR_INLINE} found for site ${FC_BOLDU_INLINE}${SITE}${CLEAR_COLOR_INLINE}"
+        else 
+          printf "%s\n\n" "$(bg::red "Restoration unfortunately not possible!")"
+          echo -e " > No ${FC_BOLDU_INLINE}configuration.php${CLEAR_COLOR_INLINE} file found for ${SITE}."
+          echo -e " > ${FC_BOLD_INLINE}Please remove site $SITE, check the files from your backup and restart the process${CLEAR_COLOR}"
+          return 1
+        fi
+
+        echo -e "\n > Database dump ${FC_BOLDU_INLINE}${db_dump[0]}${CLEAR_COLOR_INLINE} found for site ${FC_BOLDU_INLINE}${SITE}${CLEAR_COLOR_INLINE}."
+
+        CONTAINER="web.local"
+        
+        # TODO postgresql
+        run-command-container "mv '/usr/src/Projects/data/sites/$SITE/${db_dump[0]}' /usr/src/Projects/data/sites/$SITE/db_mysql_restore.sql" true
+        run-command-container "/usr/src/Projects/.tools/scripts/restore-backup.sh /var/www/html/$SITE sites_$SITE Joomla-$SITE mailcatcher r true"
+
+        printf "%s\n\n" "$(bg::green "Successfully restored Joomla Site on Folder: $SITE")"
+        echo -e "\n > Open your browser and navigate to ${FC_BOLDU_INLINE}http://localhost:${WEB_LOCAL_PORT}/${SITE}${CLEAR_COLOR_INLINE}\n"
+
+        return 0
+      fi
+
+      printf "%s\n\n" "$(bg::red "Restoration unfortunately not possible!")"
+      echo -e " > No ${FC_BOLDU_INLINE}Akeeba backup${CLEAR_COLOR_INLINE}, ${FC_BOLDU_INLINE}zip archive${CLEAR_COLOR_INLINE} or ${FC_BOLDU_INLINE}configuration.php${CLEAR_COLOR_INLINE} found in your ${FC_BOLDU_INLINE}/data/sites/${SITE}${CLEAR_COLOR_INLINE} folder.\n"
+      echo -e " > ${FC_BOLD_INLINE}Please remove site $SITE, restart the process and provide the files from your backup${CLEAR_COLOR}"
+      
+      return 1
+  else
+    return 1
+  fi
+}
+
+prepare-new-site() {
+  tmp_site=$SITE
+  unset SITE
+  # Prompt user for site
+  echo -e "\n"
+  localread "Enter your new site name" "$tmp_site" SITE
+  if [ -z "$SITE" ]; then
+    echo -e "${FC_RED}No ${FC_BOLDU_INLINE}Site${CLEAR_COLOR_INLINE}${FC_RED_INLINE} defined${CLEAR_COLOR}"
+    return 1
+  fi
+  SITE=${SITE/' '/'_'}
+  SITE=${SITE//[^[:alnum:]]/'_'}
+  SITE=${SITE/-/_}
+  SITE=${SITE//+(_)/_}
+  SITE=${SITE/#-}
+  SITE=${SITE/%-}
+  SITE=$(echo "$SITE" | sed 's/.*/\L&/')
+  if [ -d $REAL_ROOT/data/sites/$SITE ]; then
+    printf "%s\n\n" "$(bg::red "Site already exists - check: data/sites/${SITE}")"
+    return 1
+  fi
 }
 
 # Function to remove a local installed Joomla site in container `web.local`
@@ -636,62 +848,67 @@ remove-site () {
   IFS=$'\n' arrSites=($(sort <<<"${array[*]}")); unset IFS
 
   # Prompt the user to select a site to remove
-  printf "%s\n\n" "$(bg::blue "Select a local site to remove:")"
-  unset SITE
-  select SITE in ${arrSites[@]} quit; do
-    case $SITE in
-      quit)
-        break
-        ;;
-      *)
-        # Check if a valid site is selected
-        if [ -z $SITE ] || ! [[ ${arrSites[@]} =~ "$SITE" ]];then
-          echo -e "${FC_RED}No available site selected${CLEAR_COLOR}"
-          continue
-        fi
-
-        # Check if the site directory exists
-        if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
-          echo -e "${FC_RED}Site does not exist - ${REAL_ROOT}/data/sites/${SITE}${CLEAR_COLOR}"
-          continue
-        fi
-
-        # Confirm the removal with the user
-        printf "%s\n\n" "$(bg::yellow "Remove Joomla $SITE on Folder: data/sites/${SITE}")"
-        echo -e "${FC_YELLOW}Are you sure?${CLEAR_COLOR}"
-        read -rp "Confirm (y/N): " USERCONFIRMATION
-        if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
-
-          # Remove files for the site
-          CONTAINER="web.local"
-          COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
-          echo -e "\n > Remove Files for Joomla $SITE on Folder: data/sites/${SITE}\n"
-          run-command-container "rm -rv /usr/src/Projects/data/sites/$SITE | pv -l -s \$(du -a /usr/src/Projects/data/sites/$SITE | wc -l) > \/dev\/null" true
-          run-command-container "unlink /var/www/html/$SITE" true
-
-          # Remove database for the site
-          CONTAINER="mysql"
-          COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
-          echo -e "\n > Remove Database for Joomla $SITE\n"
-          run-command-container "export MYSQL_PWD=root && mysql -u root -e 'drop database if exists sites_$SITE'" true
-
-          # Remove API token environment variable if exists in .secret
-          LABEL="API_${SITE}="
-          API_LABEL=$(printf "%s" ${LABEL} | tr '[:lower:]' '[:upper:]')
-          echo -e "\n > Remove API-Token environment variable $API_LABEL if exists in .secret for Joomla $SITE\n"
-          if [ -f $REAL_ROOT/.tools/.secret ]; then
-            API_LINE=$(grep "^${API_LABEL}" $REAL_ROOT/.tools/.secret)
-            # Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
-            #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
-            #       sed: couldn't open temporary file: Permission denied
-            sed "\:$API_LINE:d" $REAL_ROOT/.tools/.secret >$TMP 2>/dev/null && cp $TMP $REAL_ROOT/.tools/.secret
+  while true; do
+    printf "%s\n\n" "$(bg::blue "Select a local site to remove:")"
+    unset SITE
+    select SITE in ${arrSites[@]} quit; do
+      case $SITE in
+        quit)
+          break 2
+          ;;
+        *)
+          # Check if a valid site is selected
+          if [ -z $SITE ] || ! [[ ${arrSites[@]} =~ "$SITE" ]];then
+            echo -e "${FC_RED}No available site selected${CLEAR_COLOR}"
+            break
           fi
 
-          printf "%s\n\n" "$(bg::green "Site $SITE and Database removed from system")"
-        fi
-        break
-        ;;
-    esac
+          # Check if the site directory exists
+          if [ ! -d $REAL_ROOT/data/sites/$SITE ]; then
+            echo -e "${FC_RED}Site does not exist - ${REAL_ROOT}/data/sites/${SITE}${CLEAR_COLOR}"
+            break
+          fi
+
+          # Confirm the removal with the user
+          printf "%s\n\n" "$(bg::yellow "Remove Joomla $SITE on Folder: data/sites/${SITE}")"
+          echo -e "${FC_YELLOW}Are you sure?${CLEAR_COLOR}"
+          read -rp "Confirm (y/N): " USERCONFIRMATION
+          if [[ $USERCONFIRMATION = "y" || $USERCONFIRMATION = "Y" ]]; then
+
+            # Remove files for the site
+            CONTAINER="web.local"
+            COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
+            echo -e "\n > Remove Files for Joomla $SITE on Folder: data/sites/${SITE}\n"
+            run-command-container "rm -rv /usr/src/Projects/data/sites/$SITE | pv -l -s \$(du -a /usr/src/Projects/data/sites/$SITE 2> >(grep -v '^du: cannot \(access\|read\)' >&2) | wc -l) > \/dev\/null" true
+            run-command-container "unlink /var/www/html/$SITE 2> >(grep -v '^unlink: cannot unlink' >&2)" true
+
+            # Remove database for the site
+            CONTAINER="mysql"
+            COMPOSEFILES="$REAL_TOOLS/local/compose.yml"
+            echo -e "\n > Remove Database for Joomla $SITE\n"
+            run-command-container "export MYSQL_PWD=root && mysql -u root -e 'drop database if exists sites_$SITE'" true
+
+            # Remove API token environment variable if exists in .secret
+            LABEL="API_${SITE}="
+            API_LABEL=$(printf "%s" ${LABEL} | tr '[:lower:]' '[:upper:]')
+            echo -e "\n > Remove API-Token environment variable $API_LABEL if exists in .secret for Joomla $SITE\n"
+            if [ -f $REAL_ROOT/.tools/.secret ]; then
+              API_LINE=$(grep "^${API_LABEL}" $REAL_ROOT/.tools/.secret)
+              if [ ! -z $API_LINE ]; then
+                echo -e " > Remove API-Token Test ${API_LINE} from .secret"
+                # Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
+                #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
+                #       sed: couldn't open temporary file: Permission denied
+                sed "\:$API_LINE:d" $REAL_ROOT/.tools/.secret >$TMP 2>/dev/null && cp $TMP $REAL_ROOT/.tools/.secret
+              fi
+            fi
+
+            printf "%s\n\n" "$(bg::green "Site $SITE and Database removed from system")"
+          fi
+          break 2
+          ;;
+      esac
+    done
   done
 
   return 0
@@ -704,7 +921,7 @@ printf "%s\n\n" "$(bg::blue "Welcome to Joomla E2E Test Suite")"
 
 echo -e " > To run your ${FC_BOLDU_INLINE}remote${CLEAR_COLOR_INLINE} site (e.g. https://example.com) with cypress, use option 1 => remote\n"
 echo -e " > To run a Joomla ${FC_BOLDU_INLINE}local${CLEAR_COLOR_INLINE} site locally with cypress, use option 2 => local\n"
-echo -e " > To ${FC_BOLDU_INLINE}manage${CLEAR_COLOR_INLINE} your local Joomla sites (create and delete), use option 3 => manage\n"
+echo -e " > To ${FC_BOLDU_INLINE}manage${CLEAR_COLOR_INLINE} your local Joomla sites (create, restore-backup and delete), use option 3 => manage\n"
 echo -e " > If you encounter any problems, first try to ${FC_BOLDU_INLINE}shutdown${CLEAR_COLOR_INLINE} your container and start again 4 => shutdown"
 
 echo -e "${FC_BLUE}Let's get started ... ${CLEAR_COLOR}"
@@ -723,49 +940,77 @@ PS3="Choose an option: "
 # If the selected option is "shutdown", the `cypress-stop` function is called and a message is displayed indicating that all containers are down and ready to restart.
 # If the selected option is "quit", the `cypress-stop` function is called and the loop is exited, terminating the script.
 # If an invalid option is selected, an error message is displayed.
-
-select opt in ${selections[@]} quit; do
-  case $opt in
-    remote)
-      CYPRESS_OPTION="remote"
-      start-cypress
-      ;;
-    local)
-      CYPRESS_OPTION="local"
-      start-cypress
-      ;;
-    manage)
-      printf "%s\n\n" "$(bg::blue "Manage local Joomla sites")"
-      select siteopt in create remove quit; do
-        case $siteopt in
-          create)
-            printf "%s\n\n" "$(bg::blue "Setup new local Joomla site")"
-            setup-site
-            break
-            ;;
-          remove)
-            remove-site
-            break
-            ;;
-          quit)
-            break
-            ;;
-          *) 
-            echo "Invalid option $REPLY"
-            ;;
-        esac
-      done
-      ;;
-    shutdown)
-      cypress-stop
-      printf "%s\n\n" "$(bg::blue "All containers down - ready to restart!")"
-      ;;
-    quit)
-      cypress-stop
-      break
-      ;;
-    *) 
-      echo "Invalid option $REPLY"
-      ;;
-  esac
+while true; do
+  if [ -z ${FIRST_LOOP:-""} ]; then
+    FIRST_LOOP="false"
+  else
+    printf "%s\n\n" "$(bg::blue "Joomla E2E Test Suite")"
+    echo -e " > To run your ${FC_BOLDU_INLINE}remote${CLEAR_COLOR_INLINE} site (e.g. https://example.com) with cypress, use option 1 => remote\n"
+    echo -e " > To run a Joomla ${FC_BOLDU_INLINE}local${CLEAR_COLOR_INLINE} site locally with cypress, use option 2 => local\n"
+    echo -e " > To ${FC_BOLDU_INLINE}manage${CLEAR_COLOR_INLINE} your local Joomla sites (create, restore-backup and delete), use option 3 => manage\n"
+    echo -e " > If you encounter any problems, first try to ${FC_BOLDU_INLINE}shutdown${CLEAR_COLOR_INLINE} your container and start again 4 => shutdown\n"
+  fi
+  select opt in ${selections[@]} quit; do
+    case $opt in
+      remote)
+        CYPRESS_OPTION="remote"
+        start-cypress
+        break
+        ;;
+      local)
+        CYPRESS_OPTION="local"
+        start-cypress
+        break
+        ;;
+      manage)
+        while true; do
+          printf "%s\n\n" "$(bg::blue "Manage local Joomla sites")"
+          select siteopt in create restore-backup remove quit; do
+            case $siteopt in
+              create)
+                printf "%s\n\n" "$(bg::blue "Setup new local Joomla site")"
+                setup-site
+                if [ $? -eq 1 ]; then
+                  break
+                fi
+                break 3
+                ;;
+              restore-backup)
+                printf "%s\n\n" "$(bg::blue "Setup new local Joomla site from a previews backup")"
+                restore-site
+                if [ $? -eq 1 ]; then
+                  break 
+                fi
+                break 3
+                ;;
+              remove)
+                remove-site
+                break
+                ;;
+              quit)
+                break 3
+                ;;
+              *) 
+                echo -e "\n${FC_RED}Invalid option $REPLY${CLEAR_COLOR}"
+                break
+                ;;
+            esac
+          done
+        done
+        ;;
+      shutdown)
+        cypress-stop
+        printf "%s\n\n" "$(bg::blue "All containers down - ready to restart!")"
+        break
+        ;;
+      quit)
+        cypress-stop
+        break 2
+        ;;
+      *) 
+        echo -e "\n${FC_RED}Invalid option $REPLY${CLEAR_COLOR}"
+        break
+        ;;
+    esac
+  done
 done
