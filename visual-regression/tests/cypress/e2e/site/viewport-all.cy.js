@@ -19,6 +19,12 @@ describe('Visual Regression Tests', () => {
         context(`Page: ${row['Name']}`, () => {
           it(`${row['Name']} should not contain any changes on ${sizeViewport} screen`, () => {
 
+              if (Cypress._.isArray(sizeViewport)) {
+                cy.viewport(sizeViewport[0], sizeViewport[1])
+              } else {
+                cy.viewport(sizeViewport)
+              }
+
               cy.visit(`${row['Adresse']}`)
 
               // synchronously query from body
