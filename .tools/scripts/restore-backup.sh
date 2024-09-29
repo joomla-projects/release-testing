@@ -60,7 +60,7 @@ sed -e "s/{SITE}/${sitename:-$site}/g" \
     -e "s/{SMTPHOST}/$smtpHost/g" \
     -e "s/{PATH}/${root//\//\\/}/g" \
     -e "s/{SECRET}/$secret/g" \
-    -e "s/{DBPREFIX}/${db_prefix:-'j__'}/g" \
+    -e "s/{DBPREFIX}/${db_prefix:-'j_'}/g" \
 	$root/configuration.php > $TMP && cp $TMP $root/configuration.php
 
 if [[ -z $dbHost || $dbHost == 'mysql'* ]]; then
@@ -96,14 +96,14 @@ echo -e " > Add user Cy-Admin with --username cy-admin and --password admin12345
 
 php $root/cli/joomla.php user:add --username cy-admin --name Cy-Admin --password 'admin12345678' --email cy-admin@example.local --usergroup 'Super Users'
 
-userId=$(mysql -u root -proot -h $dbHost -D $db_name -se "SELECT id FROM ${db_prefix:-'j__'}users where username='cy-admin'")
+userId=$(mysql -u root -proot -h $dbHost -D $db_name -se "SELECT id FROM ${db_prefix:-'j_'}users where username='cy-admin'")
 
 # Generate API tokenSeed and Bearer token
 tokenSeed=$(openssl rand -base64 16)
 
 php /usr/src/Projects/.tools/scripts/setup-api.php "$tokenSeed" "$secret" $userId "$site"
 
-mysql --defaults-extra-file=<(echo $'[client]\npassword='\"root\") -u root -h $dbHost -D $db_name -e "INSERT INTO ${db_prefix:-'j__'}user_profiles (user_id, profile_key, profile_value) VALUES(${userId}, 'joomlatoken.token', '${tokenSeed}') ON DUPLICATE KEY UPDATE profile_value = '${tokenSeed}'"
-mysql --defaults-extra-file=<(echo $'[client]\npassword='\"root\") -u root -h $dbHost -D $db_name -e "INSERT INTO ${db_prefix:-'j__'}user_profiles (user_id, profile_key, profile_value) VALUES(${userId}, 'joomlatoken.enabled', 1) ON DUPLICATE KEY UPDATE profile_value = 1"
+mysql --defaults-extra-file=<(echo $'[client]\npassword='\"root\") -u root -h $dbHost -D $db_name -e "INSERT INTO ${db_prefix:-'j_'}user_profiles (user_id, profile_key, profile_value) VALUES(${userId}, 'joomlatoken.token', '${tokenSeed}') ON DUPLICATE KEY UPDATE profile_value = '${tokenSeed}'"
+mysql --defaults-extra-file=<(echo $'[client]\npassword='\"root\") -u root -h $dbHost -D $db_name -e "INSERT INTO ${db_prefix:-'j_'}user_profiles (user_id, profile_key, profile_value) VALUES(${userId}, 'joomlatoken.enabled', 1) ON DUPLICATE KEY UPDATE profile_value = 1"
 
 echo "Configuration updated successfully!"

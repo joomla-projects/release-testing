@@ -19,7 +19,7 @@ smtpHost=$4
 dbHost='mysql'
 dbDriver='mysqli'
 secret=$(openssl rand -hex 8)
-db_prefix='j__'
+db_prefix='j_'
 
 # Change the working directory
 cd $root
