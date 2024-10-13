@@ -21,7 +21,7 @@ Docker --version
 ```
 ## Installation
 
-* Download or clone this repository:
+* [Download](https://github.com/joomla-projects/release-testing/archive/refs/heads/main.zip) or clone this repository:
 ```bash
 git clone https://github.com/joomla-projects/release-testing.git
 ```
