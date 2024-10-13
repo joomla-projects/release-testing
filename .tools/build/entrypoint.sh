@@ -105,7 +105,7 @@ case $JOOMLA_LOCAL in
 
     # Read database credentials from configuration.php
     SITE_ROOT="/usr/src/Projects/data/sites/$JOOMLA_SITE"
-    SITE_PATH="/var/www/html/$JOOMLA_SITE"
+    SITE_PATH=$(printf '%s' "$SITE_ROOT")
     SITE_PATH_SED=$(printf '%s\n' "$SITE_PATH" | sed -e 's/[\/&]/\\&/g')
     CONFIG_FILE="$SITE_ROOT/configuration.php"
 
@@ -134,6 +134,7 @@ case $JOOMLA_LOCAL in
         -e "s/{DB_NAME}/$DB_NAME/g" \
         -e "s/{DB_PREFIX}/$DB_PREFIX/g" \
         -e "s/{SITE_PATH}/$SITE_PATH_SED/g" \
+        -e "s/{SITE_PATH_BASENAME}/$JOOMLA_SITE/g" \
         -e "s/{BASE_URL}/$CYPRESS_BASE_URL_ESCAPED/g" \
         -e "s/{JOOMLA_USERNAME}/$JOOMLA_USERNAME/g" \
         -e "s/{JOOMLA_PASSWORD}/$JOOMLA_PASSWORD/g" \
@@ -142,17 +143,18 @@ case $JOOMLA_LOCAL in
         $WORKDIR/tests/cypress.config.mjs > $TMP && cp $TMP $WORKDIR/tests/cypress.config.mjs
 
     # Symlink test data into the site
-    #??? Should be checked
-    if [ ! -d $SITE_ROOT/tests/data ]; then 
-      if [ ! -d $SITE_ROOT/tests ]; then
-        mkdir -p $SITE_ROOT/tests/cypress
+    if [ -d $WORKDIR/tests/cypress/data ]; then
+      if [ ! -d $SITE_ROOT/tests/cypress/data ]; then 
+        if [ ! -d $SITE_ROOT/tests/cypress ]; then
+          mkdir -p $SITE_ROOT/tests/cypress
+        fi
+        if [ -L $SITE_ROOT/tests/cypress/data ] ; then
+          unlink $SITE_ROOT/tests/cypress/data
+        fi        
+        ln -s $WORKDIR/tests/cypress/data $SITE_ROOT/tests/cypress/data
+        chmod -R 755 $WORKDIR/tests/cypress/data
       fi
-      if [ -L $SITE_ROOT/tests/cypress/data ] ; then
-        unlink $SITE_ROOT/tests/cypress/data
-      fi
-      ln -s $WORKDIR/tests/cypress/data $SITE_ROOT/tests/cypress/data
     fi
-
     ;;
 esac
 

@@ -1,0 +1,6 @@
+[begin] (fluxbox)
+   [exec] (Cypress) {cypress open --project '/e2e/tests'}
+   [exec] (Open Test-Project (code - sublime\)) {subl '/e2e/tests/cypress'}
+   [exec] (Terminal) {xterm}
+// [include] (/etc/X11/fluxbox/fluxbox-menu)
+[end]

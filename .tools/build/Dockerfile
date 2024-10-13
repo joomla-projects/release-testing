@@ -4,6 +4,7 @@ FROM cypress/included:13.14.2
 RUN set -ex; \
     apt-get update; \
     apt-get install -y \
+      apt-utils \
       bash \
       curl \
       fluxbox \
@@ -12,12 +13,31 @@ RUN set -ex; \
       novnc \
       supervisor \
       x11vnc \
-      xvfb;
+      xvfb \
+      xterm \
+      dialog \
+      gnupg2;
     #   chromium \
     #   firefox-esr;
 
 # Run Firefox-esr in Cypress Gui
 # RUN unlink /usr/bin/firefox.real && ln -s /usr/bin/firefox-esr /usr/bin/firefox.real
+
+# Install VSCodium
+# RUN wget -qO - https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg | gpg --dearmor | dd of=/usr/share/keyrings/vscodium-archive-keyring.gpg
+
+# RUN echo 'deb [ signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg ] https://download.vscodium.com/debs vscodium main' | tee /etc/apt/sources.list.d/vscodium.list
+
+# RUN apt-get update; \
+    # apt-get install -y \
+    # codium;
+
+# Install Sublime Text
+RUN wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | gpg --dearmor | tee /etc/apt/trusted.gpg.d/sublimehq-archive.gpg > /dev/null
+RUN echo "deb https://download.sublimetext.com/ apt/stable/" | tee /etc/apt/sources.list.d/sublime-text.list
+
+RUN apt-get update && apt-get install -y \
+    sublime-text
 
 # Setup inital environment variables
 ENV HOME=/root \
@@ -61,6 +81,10 @@ COPY ./novnc /novnc
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chown -R ${USER_ID}:${GROUP_ID} "/novnc"
 RUN chown -R ${USER_ID}:${GROUP_ID} "/root/.npm"
+
+RUN if [ -f /root/.fluxbox/menu ]; then mv /root/.fluxbox/menu /root/.fluxbox/menu.bak; fi
+COPY ./fluxbox/fluxbox-menu /root/.fluxbox/menu
+RUN chmod -R 777 /root/.fluxbox
 
 USER node
 # show user effective id and group - it should be non-zero

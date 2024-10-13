@@ -3,8 +3,8 @@ import setupPlugins from './cypress/plugins/index.mjs';
 
 export default defineConfig({
 	fixturesFolder: 'cypress/fixtures',
-	videosFolder: '../output/videos/{TEST_PROJECT}',
-	screenshotsFolder: '../output/screenshots/{TEST_PROJECT}',
+	videosFolder: '../output/videos/{SITE_PATH_BASENAME}',
+	screenshotsFolder: '../output/screenshots/{SITE_PATH_BASENAME}',
 	viewportHeight: 1000,
 	viewportWidth: 1200,
 	e2e: {
@@ -51,7 +51,7 @@ export default defineConfig({
 		// embeddedScreenshots: true,
 		inlineAssets: true,
 		saveAllAttempts: false,
-		reportDir: '../output/reports/{TEST_PROJECT}',
+		reportDir: '../output/reports/{SITE_PATH_BASENAME}',
 		overwrite: false,
 	}
 });
