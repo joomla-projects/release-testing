@@ -13,8 +13,7 @@ REAL_TOOLS=$(realpath $REAL_ROOT/.tools)
 # Temporary file that is deleted when the script is terminated
 TMP=${REAL_TOOLS}/tmp/$(basename $0).$$
 trap 'rm -rf $TMP' 0
-
-echo -e " > Adding temp file ${TMP}"
+# echo -e " > Adding temp file ${TMP}"
 
 BUILD=$REAL_TOOLS/build
 
@@ -127,11 +126,11 @@ start-cypress () {
     fi
 
     # Prompt user for project
-    tmp_project=${PROJECT:-"cms"}
+    tmp_project=${PROJECT:-"${DEFAULT_TEST_PROJECT}"}
     unset PROJECT
 
     echo -e "${FC_BLUE}Cypress needs a ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} as project where the tests are stored${CLEAR_COLOR}"
-    echo -e "Defaul folder: ${FC_BOLDU_INLINE}cms${CLEAR_COLOR_INLINE}\n"
+    echo -e "Defaul folder: ${FC_BOLDU_INLINE}${DEFAULT_TEST_PROJECT}${CLEAR_COLOR_INLINE}\n"
 
     localread "Enter your project" "$tmp_project" PROJECT
     if [ -z $PROJECT ] || [ ! -d $REAL_ROOT/$PROJECT ]; then
@@ -148,18 +147,18 @@ start-cypress () {
     check-image-build
 
     # Prompt user for project
-    tmp_project=${PROJECT:-"cms"}
+    tmp_project=${PROJECT:-"${DEFAULT_TEST_PROJECT}"}
     tmp_site=$SITE
     unset PROJECT
     unset SITE
     # Define default values for local testing
-    JUSER="admin"
+    JUSER="cy-admin"
     JPASSWORD="admin12345678"
 
     printf "%s\n\n" "$(bg::blue "To start the local cypress test we need some info first")"
 
     echo -e "${FC_BLUE}Cypress needs a ${FC_BOLDU_INLINE}folder${CLEAR_COLOR_INLINE}${FC_BLUE_INLINE} as project where the tests are stored${CLEAR_COLOR}"
-    echo -e "Defaul folder: ${FC_BOLDU_INLINE}cms${CLEAR_COLOR_INLINE}\n"
+    echo -e "Defaul folder: ${FC_BOLDU_INLINE}${DEFAULT_TEST_PROJECT}${CLEAR_COLOR_INLINE}\n"
 
     localread "Enter your project" "$tmp_project" PROJECT
     if [ -z $PROJECT ] || [ ! -d $REAL_ROOT/$PROJECT ]; then
@@ -247,6 +246,7 @@ start-cypress () {
           cypress-stop
           check-image-build
           cypress-start
+          break
           ;;
         restart-debug)
           cypress-stop
@@ -300,8 +300,9 @@ cypress-start () {
 
   # Check if Cypress option is set to "local"
   if [ $CYPRESS_OPTION == "local" ]; then
+    update-index-sites
     docker compose -f $REAL_TOOLS/local/compose.yml -f $REAL_TOOLS/local/compose.local.yml up -d --remove-orphans
-    printf "%s\n\n" "$(bg::blue "Open Cypress for site: $SITE and project: $PROJECT")"
+    printf "%s\n\n" "$(bg::blue "Starting Cypress for site: $SITE and project: $PROJECT")"
     cypress-start-feedback
     if [ $? -eq 1 ]; then
       cypress-stop
@@ -355,7 +356,8 @@ cypress-start-feedback() {
     return 1
   fi
   echo -e "\n"
-  printf "%s\n\n" "$(bg::green "http://localhost:5800/vnc.html?autoconnect=true")"
+  printf "%s\n\n" "$(bg::green "Joomla E2E Test Suite is ready for testing")"
+  printf "%s\n\n" "$(bg::blue "open cypress via http://localhost:5800/vnc.html?autoconnect=true \n\n > or browse the overview of all available tools via http://localhost:${WEB_LOCAL_PORT}")"
   return 0
 }
 
@@ -372,6 +374,7 @@ cypress-debug () {
   fi
 
   if [ $CYPRESS_OPTION == "local" ]; then
+    update-index-sites
     docker compose -f $REAL_TOOLS/local/compose.yml -f $REAL_TOOLS/local/compose.local.yml up --remove-orphans
     printf "%s\n\n" "$(bg::blue "Open Cypress for site: $SITE and project: $PROJECT")"
     cypress-start-feedback-debug
@@ -530,7 +533,7 @@ check-local-containers-running() {
 # Function to export repeatedly used variables
 export-variables() {
   export JOOMLA_USERNAME=${JUSER:-"cy-admin"} JOOMLA_PASSWORD=${JPASSWORD:-"admin12345678"} DOMAIN=${JDOMAIN:-"http:web.local/${SITE:-"test"}"} \
-         JOOMLA_PROJECT=${PROJECT:-"cms"} JOOMLA_SITE=${SITE:-"test"} ROOT=$REAL_ROOT WEB_LOCAL_PORT=${WEB_LOCAL_PORT:-"8080"} \
+         JOOMLA_PROJECT=${PROJECT:-"${DEFAULT_TEST_PROJECT}"} JOOMLA_SITE=${SITE:-"test"} ROOT=$REAL_ROOT WEB_LOCAL_PORT=${WEB_LOCAL_PORT:-"8080"} \
          WEB_LOCAL_PORT_SSL=${WEB_LOCAL_PORT_SSL:-"4433"} JOOMLA_API_TOKEN=${JAPITOKEN:-}
 }
 
@@ -921,6 +924,31 @@ remove-site () {
   return 0
 }
 
+# Function to update the index php for local installed Joomla sites in container `web.local`
+update-index-sites () {
+
+  # Get a list of available sites
+  IFS=$'\n'
+    array=($(find $REAL_ROOT/data/sites/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \;))
+  unset IFS
+  cp $REAL_TOOLS/local/web/www/index.txt $REAL_TOOLS/local/web/www/index.php
+  # Sort the list of sites
+  IFS=$'\n' arrSites=($(sort <<<"${array[*]}")); unset IFS
+
+  # Note: Don't use sed -i as Docker container image php-8.3, which uses Ubuntu 20.04.6 LTS, which uses GNU sed 4.7.
+  #       GNU sed 4.2 ... 4.7 incorrectly set umask on temporary files
+  #       sed: couldn't open temporary file: Permission denied
+
+  # -e "s/{SITENAME}/$SITENAME/g" \
+  unset TMP_AVAILABEL_SITES
+  for value in "${arrSites[@]}"
+  do
+     TMP_AVAILABEL_SITES="${TMP_AVAILABEL_SITES} <li><p>Joomla site: <a href=\"${value}\" target=\"_blank\"><b>${value}<\/b><\/a> -- Backend: <a href=\"${value}\/administrator\" target=\"_blank\"><b>(admin)<\/b><\/a>.<\/p><\/li>"
+  done
+  sed -e "s/<!-- Available Sites List -->/${TMP_AVAILABEL_SITES}/g" \
+      $REAL_TOOLS/local/web/www/index.txt > $REAL_TOOLS/local/web/www/index.php
+}
+
 # Welcome User and build container if not exists
 
 printf "%s\n\n" "$(bg::blue "Welcome to Joomla E2E Test Suite")"
@@ -980,6 +1008,7 @@ while true; do
                 if [ $? -eq 1 ]; then
                   break
                 fi
+                update-index-sites
                 break 3
                 ;;
               restore-backup)
@@ -988,10 +1017,12 @@ while true; do
                 if [ $? -eq 1 ]; then
                   break 
                 fi
+                update-index-sites
                 break 3
                 ;;
               remove)
                 remove-site
+                update-index-sites
                 break
                 ;;
               quit)

@@ -22,12 +22,15 @@
 <body>
 <h1>Welcome to Joomla E2E Test Suite</h1>
 <p>More information can be found on <a href="https://github.com/joomla-projects/release-testing">Github</a>.</p>
-<p>Here is the list of available sites:</p>
+<p>Here is the list of available tools:</p>
 <ul>
-	<p><a href="//<?php echo $_SERVER['SERVER_NAME']; ?>:81">PHPMyAdmin installation</a></p>
+	<li><p><a href="//<?php echo $_SERVER['SERVER_NAME']; ?>:81">PHPMyAdmin (DB)</a></p></li>
 	<!-- <p><a href="//<?php // echo $_SERVER['SERVER_NAME']; ?>:83">Mailcatcher installation</a></p> -->
-	<p><a href="//<?php echo $_SERVER['SERVER_NAME']; ?>:5800/vnc.html?autoconnect=true">Cypress installation</a></p>
-	<!-- TODO: List Sites dyanmically -->
+	<li><p><a href="//<?php echo $_SERVER['SERVER_NAME']; ?>:5800/vnc.html?autoconnect=true">Cypress (Testing)</a></p></li>
+</ul>
+<p>Here is the list of available sites:</p>
+<ul class="sites-list">
+	<!-- Available Sites List -->
 </ul>
 </body>
 </html>

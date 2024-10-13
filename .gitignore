@@ -2,7 +2,7 @@ data/install/*.zip
 data/sites/*
 !data/sites/.gitkeep
 .tools/local/web/www/*
-!.tools/local/web/www/index.php
+!.tools/local/web/www/index.txt
 .tools/.secret
 # important: do not remove the obove line
 .tools/tmp/*
