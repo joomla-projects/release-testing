@@ -6,7 +6,7 @@ One week before the official release, a Release Candidate (RC) version is made a
 
 However, manually testing every feature and step can be time-consuming and resource-intensive. That's why we've tried to  develop a **simple and intuitive solution** to streamline the testing process. Our goal is to make testing as easy and accessible as possible.
 
-With our project, you can easily test either a brand-new Joomla site or your own existing site. Use the remote option or the restore option to quickly create a local clone of your Joomla site, allowing for fast and efficient testing in a controlled environment. 
+With our project, you can easily test either a brand-new Joomla site or your own existing site. Use the restore option to quickly create a local clone of your Joomla site or simply use the remote option, allowing for fast and efficient testing in a controlled environment. 
 
 This repository takes care of all the dependencies for you, so there's no need to worry about configuring them manually. We've made the process straightforward, so you can focus on testing, not troubleshooting.
 
@@ -81,4 +81,4 @@ environment:
       JOOMLA_DB_NAME: sites_${SITE}
       JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK: 1
 ```
-For detailed information and the complete documentation, please visit the [Wiki](https://github.com/joomla-projects/release-testing/wiki).
+> For detailed information and the complete documentation, please visit the [Wiki](https://github.com/joomla-projects/release-testing/wiki).
