@@ -25,6 +25,7 @@
 	},
 	"devDependencies": {
 		"cypress-mochawesome-reporter": "^3.8.2",
+		"cypress-on-fix": "^1.0.3",
 		"joomla-cypress": "^1.0.3",
 		"mochawesome": "^7.1.3",
 		"mysql": "^2.18.1",
