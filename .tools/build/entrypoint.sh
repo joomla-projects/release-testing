@@ -150,7 +150,7 @@ case $JOOMLA_LOCAL in
         fi
         if [ -L $SITE_ROOT/tests/cypress/data ] ; then
           unlink $SITE_ROOT/tests/cypress/data
-        fi        
+        fi
         ln -s $WORKDIR/tests/cypress/data $SITE_ROOT/tests/cypress/data
         chmod -R 755 $WORKDIR/tests/cypress/data
       fi
@@ -159,8 +159,9 @@ case $JOOMLA_LOCAL in
 esac
 
 if [ ! -f $WORKDIR/tests/package.json ]; then
-  echo "[ERROR] No package.json found in the tests folder. Skipping cypress container start."
-  exit 0
+  echo "[ATTENTION] No package.json found in the tests folder. A general default one will be injected."
+  cp -f $TOOLS_ROOT/config/package.json $WORKDIR/tests/package.json
+  cp -f $TOOLS_ROOT/config/package-lock.json $WORKDIR/tests/package-lock.json
 fi
 
 # Set the correct permissions
@@ -194,8 +195,6 @@ if [ -f $WORKDIR/tests/package.json ]; then
       fi
       ;;
   esac
-  
-  
 fi
 
 export DISPLAY=:0
