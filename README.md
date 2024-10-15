@@ -2,6 +2,7 @@
 **Release testing** plays a crucial role in the Joomla development cycle. It ensures that new versions of the CMS are stable, almost bug-free, and ready for public use. Minor updates of the Joomla CMS are released as minor updates every six (6) Tuesdays (although the schedule may vary) - [Joomla! Project Roadmap](https://developer.joomla.org/roadmap.html). \
 One week before the official release, a Release Candidate (RC) version is made available for testing and **community participation is essential.**
 
+> [!TIP]
 > **The more people who test, the better the quality of the final release.**
 
 However, manually testing every feature and step can be time-consuming and resource-intensive. That's why we've tried to  develop a **simple and intuitive solution** to streamline the testing process. Our goal is to make testing as easy and accessible as possible.
@@ -81,4 +82,5 @@ environment:
       JOOMLA_DB_NAME: sites_${SITE}
       JOOMLA_INSTALLATION_DISABLE_LOCALHOST_CHECK: 1
 ```
+> [!IMPORTANT]
 > For detailed information and the complete documentation, please visit the [Wiki](https://github.com/joomla-projects/release-testing/wiki).

@@ -7,8 +7,11 @@ data/sites/*
 # important: do not remove the obove line
 .tools/tmp/*
 !.tools/tmp/.gitkeep
+**/cypress.config.mjs
+**/cypress.config.mjs.bak
+**/output/visual-regression-diff
+**/node_modules
 **/output
 **/import
 **/tests/cypress/downloads/**
-**/tests/cypress.config.mjs
-**/tests/cypress.config.mjs.bak
+!visual-regression/import/sitemap.csv.example
