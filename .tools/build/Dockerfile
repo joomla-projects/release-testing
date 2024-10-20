@@ -32,6 +32,9 @@ RUN set -ex; \
     # apt-get install -y \
     # codium;
 
+# Install pnpm as alternative package manager
+RUN npm install -g pnpm
+
 # Install Sublime Text
 RUN wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | gpg --dearmor | tee /etc/apt/trusted.gpg.d/sublimehq-archive.gpg > /dev/null
 RUN echo "deb https://download.sublimetext.com/ apt/stable/" | tee /etc/apt/sources.list.d/sublime-text.list

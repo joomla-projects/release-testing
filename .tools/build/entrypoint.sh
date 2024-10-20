@@ -39,6 +39,28 @@ copyConfig() {
   cp -f $TOOLS_ROOT/config/cypress.config.dist.mjs $WORKDIR/tests/cypress.config.mjs
 }
 
+# Install dependencies
+installDependencies() {
+  cd $WORKDIR/tests/
+
+  if [ ${PACKAGE_MANAGER_PREFS:-npm} == 'pnpm' ]; then
+    if [ ! -f $WORKDIR/tests/pnpm-lock.yaml ] && [ -f $WORKDIR/tests/package-lock.json ]; then
+      pnpm import package-lock.json
+    fi
+    if [ ! -f $WORKDIR/tests/pnpm-lock.yaml ]; then
+      pnpm install
+    else
+      pnpm install --frozen-lockfile
+    fi
+  else
+    if [ ! -f $WORKDIR/tests/package-lock.json ]; then
+      npm i
+    else
+      npm ci
+    fi
+  fi
+}
+
 # Setup configuration file
 # Backup the original file if a backup file not already exists and .env variable is not set to false/no/0
 # Copy the configuration file to the working directory if .env variable is set to true/yes
@@ -162,10 +184,19 @@ if [ ! -f $WORKDIR/tests/package.json ]; then
   echo "[ATTENTION] No package.json found in the tests folder. A general default one will be injected."
   cp -f $TOOLS_ROOT/config/package.json $WORKDIR/tests/package.json
   cp -f $TOOLS_ROOT/config/package-lock.json $WORKDIR/tests/package-lock.json
+  cp -f $TOOLS_ROOT/config/pnpm-lock.yaml $WORKDIR/tests/pnpm-lock.yaml
 fi
 
 # Set the correct permissions
-chown node:node $WORKDIR/tests/package.json $WORKDIR/tests/package-lock.json
+chown node:node $WORKDIR/tests/package.json
+
+if [ -f $WORKDIR/tests/pnpm-lock.yaml ]; then
+  chown node:node $WORKDIR/tests/pnpm-lock.yaml
+fi
+
+if [ -f $WORKDIR/tests/package-lock.json ]; then
+  chown node:node $WORKDIR/tests/package-lock.json
+fi
 
 # Install the assets
 if [ -f $WORKDIR/tests/package.json ]; then
@@ -173,25 +204,25 @@ if [ -f $WORKDIR/tests/package.json ]; then
     always)
       echo "Cleaning the assets"
       rm -rf $WORKDIR/tests/node_modules
+      if [ ${PACKAGE_MANAGER_PREFS:-npm} == 'pnpm' ]; then
+        cd $WORKDIR/tests && pnpm store prune
+      fi
       echo -e " > Installing the assets (takes a while!)"
-      cd $WORKDIR/tests/
-      npm ci
+      installDependencies
       ;;
     *)
       if [ ! -d $WORKDIR/tests/node_modules ]; then
         echo -e " > Installing the assets (takes a while!)"
-        cd $WORKDIR/tests/
-        npm ci
+        installDependencies
       elif [ -d $WORKDIR/tests/node_modules ] && [[ $(find "$WORKDIR/tests/node_modules" -type d -mtime +1 -print) ]]; then
         echo "Assets already installed but older than 1 day"
         echo "Cleaning the assets"
         rm -rf $WORKDIR/tests/node_modules
         echo -e " > Installing the assets (takes a while!)"
-        cd $WORKDIR/tests/
-        npm ci
+        installDependencies
       else
         echo "Assets already installed"
-        echo "Skipping npm install"
+        echo "Skipping ${PACKAGE_MANAGER_PREFS:-npm} install"
       fi
       ;;
   esac
