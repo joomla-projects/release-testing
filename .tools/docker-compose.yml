@@ -1,7 +1,7 @@
 services:
 
   cypress:
-    image: joomla-cypress-included:13.14.2v3
+    image: joomla-cypress-included:13.14.2v4
     container_name: joomla_cypress
     restart: 'on-failure'
     environment:

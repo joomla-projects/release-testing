@@ -15,3 +15,4 @@ data/sites/*
 **/import
 **/tests/cypress/downloads/**
 !visual-regression/import/sitemap.csv.example
+**/.pnpm-store
