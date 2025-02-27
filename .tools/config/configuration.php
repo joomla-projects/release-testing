@@ -44,9 +44,9 @@ class JConfig {
 	public $smtpauth = '0';
 	public $smtpuser = '';
 	public $smtppass = '';
-	public $smtphost = 'cypress'; // the service label of the cypress container in docker-compose.yml
+	public $smtphost = 'maildev'; // the service label of the maildev container in docker-compose.yml
 	public $smtpsecure = 'none';
-	public $smtpport = '1035';
+	public $smtpport = '1025';
 	public $caching = '0';
 	public $cache_handler = 'file';
 	public $cachetime = '15';

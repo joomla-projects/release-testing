@@ -47,5 +47,13 @@ services:
     networks:
       - joomla-cypress
 
+  maildev:
+    image: maildev/maildev
+    container_name: joomla_cypress-maildev
+    ports:
+      - 83:1080
+    networks:
+      - joomla-cypress
+
 volumes:
   jcy_mysql:

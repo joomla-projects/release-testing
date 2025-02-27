@@ -1,7 +1,7 @@
 describe('Test in backend that the application configuration', () => {
   beforeEach(() => {
     cy.skipWhenNot(Cypress.config('baseUrl').includes('web.local'))
-    cy.task('clearEmails');
+    cy.maildevDeleteAllMessages();
     cy.doAdministratorLogin();
     cy.visit('/administrator/index.php?option=com_config');
   });
@@ -22,12 +22,20 @@ describe('Test in backend that the application configuration', () => {
     cy.get('#jform_smtpsecure').select('none');
     cy.get('#sendtestmail').click();
 
-    cy.task('getMails').then((mails) => {
-      cy.get('#system-message-container').should('contain.text', 'The email was sent to');
-      cy.wrap(mails).should('have.lengthOf', 1);
-      cy.wrap(mails[0].body).should('have.string', 'This is a test mail sent using');
-      cy.wrap(mails[0].sender).should('equal', Cypress.env('email'));
-      cy.wrap(mails[0].receivers).should('have.property', Cypress.env('email'));
+    cy.get('#system-message-container').should('contain.text', 'The email was sent to');
+
+    cy.maildevGetAllMessages().then((emails) => {
+      expect(emails.length).to.equal(1);
+    });
+
+    cy.maildevGetLastMessage().then((email) => {
+      expect(email.from[0].address).to.equal(Cypress.env('email'));
+      expect(email.to[0].address).to.equal(Cypress.env('email'));
+      expect(email.text).to.contain('This is a test mail sent using');
+      // cy.wrap(email.text).should("have.string", "This is a test mail sent using");
+      // HTML
+      // cy.maildevVisitMessageById(email.id);
+      // cy.get("body h1").should("have.string", "This is a test mail sent using");
     });
   });
 });

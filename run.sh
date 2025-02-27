@@ -615,7 +615,7 @@ setup-site () {
                 
                 printf "%s\n\n" "$(bg::blue "Install Joomla $VERSION on Folder: $SITE")"
 
-                run-command-container "/usr/src/Projects/.tools/scripts/install-joomla.sh /var/www/html/$SITE sites_$SITE Joomla-$SITE mailcatcher r true"
+                run-command-container "/usr/src/Projects/.tools/scripts/install-joomla.sh /var/www/html/$SITE sites_$SITE Joomla-$SITE maildev r true"
                 
                 return 0
               fi
